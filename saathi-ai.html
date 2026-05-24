@@ -124,7 +124,7 @@
   <p class="footer">🤖 Saathi AI · ⚡ Groq se Powered · 💛 Bilkul Free!</p>
 
 <script>
-  let API_KEY = localStorage.getItem("groq_key") || "";
+  let API_KEY = "";
   let messages = [];
 
   function saveKey() {
@@ -137,7 +137,7 @@
     const status = document.getElementById("key-status");
     status.textContent = "✅ Ready";
     status.className = "status on";
-    document.localStorage.setItem("groq_key", key);
+
 document.getElementById("api-key-input").value = "••••••••••••••••••••";
     
   }
