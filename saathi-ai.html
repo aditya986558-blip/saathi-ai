@@ -104,7 +104,7 @@ let chatHistory = [];
 
 function saveKey() {
   const val = document.getElementById("api-key-input").value.trim();
-  if (!val.startsWith("gsk_")) {
+  if (val.length < 10) {
     alert("⚠️ Key galat hai! gsk_ se shuru honi chahiye!");
     return;
   }
