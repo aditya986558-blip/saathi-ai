@@ -2,7 +2,7 @@
 <html lang="hi">
 <head>
   <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Saathi AI 🤖</title>
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&display=swap" rel="stylesheet"/>
   <style>
@@ -22,39 +22,55 @@
     .header h1 { font-size: 30px; font-weight: 800; color: #f59e0b; text-shadow: 0 0 24px rgba(245,158,11,0.5); letter-spacing: 2px; }
     .header .tagline { background: linear-gradient(90deg, #f59e0b, #ec4899, #6366f1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 13px; font-weight: 600; margin-top: 4px; }
     .chat-box { width: 100%; max-width: 680px; background: rgba(255,255,255,0.04); border: 1px solid rgba(245,158,11,0.25); border-radius: 20px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.4); }
-    .key-bar { padding: 12px 16px; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(245,158,11,0.15); display: flex; gap: 8px; align-items: center; }
-    .key-bar input { flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(245,158,11,0.3); border-radius: 10px; padding: 8px 12px; color: #e2e8f0; font-size: 12px; font-family: monospace; outline: none; }
+    .key-bar { padding: 12px 16px; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(245,158,11,0.15); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .key-bar input { flex: 1; min-width: 120px; background: rgba(255,255,255,0.06); border: 1px solid rgba(245,158,11,0.3); border-radius: 10px; padding: 8px 12px; color: #e2e8f0; font-size: 12px; font-family: monospace; outline: none; }
     .key-bar input:focus { border-color: #f59e0b; }
     .key-bar .save-btn { background: linear-gradient(135deg, #f59e0b, #d97706); border: none; border-radius: 10px; padding: 8px 14px; font-size: 12px; font-weight: 800; color: #000; cursor: pointer; font-family: 'Baloo 2', sans-serif; }
     .key-bar .clear-btn2 { background: rgba(239,68,68,0.2); border: 1px solid #ef4444; border-radius: 10px; padding: 8px 10px; font-size: 12px; color: #ef4444; cursor: pointer; }
     .key-status { font-size: 11px; padding: 4px 8px; border-radius: 8px; white-space: nowrap; background: rgba(239,68,68,0.2); color: #ef4444; }
     .key-status.ready { background: rgba(34,197,94,0.2); color: #22c55e; }
-    .messages { min-height: 300px; max-height: 420px; overflow-y: auto; padding: 20px 16px; display: flex; flex-direction: column; gap: 14px; }
+    .hf-bar { padding: 10px 16px; background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(99,102,241,0.2); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .hf-bar input { flex: 1; min-width: 120px; background: rgba(255,255,255,0.06); border: 1px solid rgba(99,102,241,0.3); border-radius: 10px; padding: 8px 12px; color: #e2e8f0; font-size: 12px; font-family: monospace; outline: none; }
+    .hf-bar input:focus { border-color: #6366f1; }
+    .hf-bar .save-btn { background: linear-gradient(135deg, #6366f1, #4f46e5); border: none; border-radius: 10px; padding: 8px 14px; font-size: 12px; font-weight: 800; color: #fff; cursor: pointer; font-family: 'Baloo 2', sans-serif; }
+    .hf-bar .clear-btn2 { background: rgba(239,68,68,0.2); border: 1px solid #ef4444; border-radius: 10px; padding: 8px 10px; font-size: 12px; color: #ef4444; cursor: pointer; }
+    .hf-status { font-size: 11px; padding: 4px 8px; border-radius: 8px; white-space: nowrap; background: rgba(239,68,68,0.2); color: #ef4444; }
+    .hf-status.ready { background: rgba(99,102,241,0.2); color: #818cf8; }
+    .ratio-bar { padding: 8px 16px; background: rgba(0,0,0,0.15); border-bottom: 1px solid rgba(99,102,241,0.1); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .ratio-bar span { font-size: 11px; color: #64748b; margin-right: 4px; }
+    .ratio-btn { background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.25); color: #818cf8; border-radius: 8px; padding: 4px 10px; font-size: 11px; cursor: pointer; font-family: 'Baloo 2', sans-serif; transition: all 0.2s; }
+    .ratio-btn.active { background: rgba(99,102,241,0.4); border-color: #6366f1; color: #fff; font-weight: 800; }
+    .messages { min-height: 300px; max-height: 480px; overflow-y: auto; padding: 20px 16px; display: flex; flex-direction: column; gap: 14px; }
     .empty-state { text-align: center; margin: auto; }
     .empty-state .big { font-size: 44px; display: block; margin-bottom: 8px; }
     .empty-state h3 { color: #94a3b8; font-size: 15px; font-weight: 600; }
     .empty-state p { color: #64748b; font-size: 12px; margin-top: 4px; }
     .suggestions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 16px; }
     .suggestion-btn { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); color: #fbbf24; border-radius: 20px; padding: 7px 14px; font-size: 12px; cursor: pointer; font-family: 'Baloo 2', sans-serif; }
+    .img-suggestion-btn { background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.3); color: #818cf8; border-radius: 20px; padding: 7px 14px; font-size: 12px; cursor: pointer; font-family: 'Baloo 2', sans-serif; }
     .msg { display: flex; align-items: flex-start; gap: 8px; }
     .msg.user { flex-direction: row-reverse; }
     .avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #f59e0b, #d97706); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
     .bubble { max-width: 78%; padding: 10px 14px; font-size: 14px; line-height: 1.7; border-radius: 18px; }
     .msg.user .bubble { background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; border-radius: 18px 18px 4px 18px; font-weight: 600; }
     .msg.ai .bubble { background: rgba(255,255,255,0.07); color: #e2e8f0; border: 1px solid rgba(255,255,255,0.1); border-radius: 18px 18px 18px 4px; }
+    .msg.ai .bubble img { max-width: 100%; border-radius: 12px; margin-top: 8px; display: block; border: 2px solid rgba(99,102,241,0.4); }
     .typing-bubble { display: flex; align-items: center; gap: 8px; }
     .typing-dots { display: flex; gap: 5px; padding: 12px 16px; background: rgba(255,255,255,0.07); border-radius: 18px; border: 1px solid rgba(255,255,255,0.1); }
     .typing-dots span { width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; animation: bounce 1.2s infinite; }
     .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
     .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
-    .input-area { padding: 14px 16px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; gap: 10px; background: rgba(0,0,0,0.2); }
-    textarea { flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(245,158,11,0.25); border-radius: 14px; padding: 11px 14px; color: #e2e8f0; font-size: 14px; font-family: 'Baloo 2', sans-serif; resize: none; outline: none; line-height: 1.5; }
+    .input-area { padding: 14px 16px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; gap: 10px; background: rgba(0,0,0,0.2); flex-wrap: wrap; }
+    textarea { flex: 1; min-width: 200px; background: rgba(255,255,255,0.06); border: 1px solid rgba(245,158,11,0.25); border-radius: 14px; padding: 11px 14px; color: #e2e8f0; font-size: 14px; font-family: 'Baloo 2', sans-serif; resize: none; outline: none; line-height: 1.5; }
     textarea:focus { border-color: #f59e0b; }
     textarea::placeholder { color: #475569; }
     .send-btn { background: linear-gradient(135deg, #f59e0b, #d97706); border: none; border-radius: 14px; width: 48px; height: 48px; font-size: 20px; cursor: pointer; flex-shrink: 0; }
     .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .img-btn { background: linear-gradient(135deg, #6366f1, #4f46e5); border: none; border-radius: 14px; width: 48px; height: 48px; font-size: 20px; cursor: pointer; flex-shrink: 0; }
+    .img-btn:disabled { opacity: 0.4; cursor: not-allowed; }
     .bottom-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; width: 100%; max-width: 680px; }
     .clear-btn { background: transparent; border: 1px solid rgba(255,255,255,0.12); color: #64748b; border-radius: 20px; padding: 6px 16px; font-size: 12px; cursor: pointer; font-family: 'Baloo 2', sans-serif; }
+    .mode-hint { font-size: 11px; color: #475569; padding: 4px 10px; background: rgba(99,102,241,0.08); border-radius: 8px; border: 1px solid rgba(99,102,241,0.15); }
     .footer { font-size: 11px; color: #334155; margin-top: 20px; text-align: center; }
     @keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
   </style>
@@ -63,8 +79,9 @@
   <div class="header">
     <span class="emoji-h">🤖✨</span>
     <h1>⚡ Saathi AI 🧠</h1>
-    <p class="tagline">🌟 Tumhara Smart Dost • Har Sawaal Ka Jawab 🚀</p>
+    <p class="tagline">🌟 Tumhara Smart Dost • Har Sawaal Ka Jawab • Images Bhi! 🎨</p>
   </div>
+
   <div class="chat-box">
     <div class="key-bar">
       <input type="password" id="api-key-input" placeholder="🔑 Groq key yahan paste karo..." />
@@ -72,11 +89,25 @@
       <button class="clear-btn2" onclick="clearKey()">✕</button>
       <span class="key-status" id="key-status">❌</span>
     </div>
+    <div class="hf-bar">
+      <input type="password" id="hf-key-input" placeholder="🎨 Hugging Face key yahan paste karo..." />
+      <button class="save-btn" onclick="saveHFKey()">✅ Save</button>
+      <button class="clear-btn2" onclick="clearHFKey()">✕</button>
+      <span class="hf-status" id="hf-status">❌</span>
+    </div>
+    <div class="ratio-bar">
+      <span>📐 Image Size:</span>
+      <button class="ratio-btn active" onclick="setRatio(this,'1024','1024')" data-label="1:1 Square">🟦 1:1</button>
+      <button class="ratio-btn" onclick="setRatio(this,'1344','768')" data-label="16:9 Landscape">🖥️ 16:9</button>
+      <button class="ratio-btn" onclick="setRatio(this,'768','1344')" data-label="9:16 Portrait">📱 9:16</button>
+      <button class="ratio-btn" onclick="setRatio(this,'1216','832')" data-label="3:2 Photo">🖼️ 3:2</button>
+      <button class="ratio-btn" onclick="setRatio(this,'832','1216')" data-label="2:3 Portrait">📷 2:3</button>
+    </div>
     <div class="messages" id="messages">
       <div class="empty-state" id="empty-state">
         <span class="big">🌈💫</span>
         <h3>🔥 Koi bhi sawaal daaro, jhijhko mat!</h3>
-        <p>📚 Science • 🧮 Maths • 🌍 History • 💡 GK • 🎁 Gift Ideas</p>
+        <p>📚 Science • 🧮 Maths • 🌍 History • 💡 GK • 🎨 Images</p>
         <div class="suggestions">
           <button class="suggestion-btn" onclick="quickSend(this)">🌿 Photosynthesis kya hai?</button>
           <button class="suggestion-btn" onclick="quickSend(this)">⚡ Newton ke laws?</button>
@@ -84,80 +115,97 @@
           <button class="suggestion-btn" onclick="quickSend(this)">🧮 Pythagoras theorem?</button>
           <button class="suggestion-btn" onclick="quickSend(this)">😊 Kaise ho tum?</button>
         </div>
+        <div class="suggestions" style="margin-top:8px;">
+          <button class="img-suggestion-btn" onclick="quickImage(this)">🌅 Sunset over ocean</button>
+          <button class="img-suggestion-btn" onclick="quickImage(this)">🏔️ Mountains and river</button>
+          <button class="img-suggestion-btn" onclick="quickImage(this)">🤖 Futuristic robot</button>
+          <button class="img-suggestion-btn" onclick="quickImage(this)">🌸 Beautiful flower garden</button>
+        </div>
       </div>
     </div>
     <div class="input-area">
-      <textarea id="user-input" rows="1" placeholder="✍️ Apna sawaal yahan likho... (Enter dabao 🚀)" onkeydown="handleKey(event)"></textarea>
-      <button class="send-btn" id="send-btn" onclick="sendMessage()">➤</button>
+      <textarea id="user-input" rows="1" placeholder="✍️ Sawaal likho ya 🎨 image banao..." onkeydown="handleKey(event)"></textarea>
+      <button class="send-btn" id="send-btn" onclick="sendMessage()" title="Jawab lo">➤</button>
+      <button class="img-btn" id="img-btn" onclick="generateImage()" title="Image banao">🎨</button>
     </div>
   </div>
+
   <div class="bottom-bar">
     <button class="clear-btn" onclick="clearChat()">🗑️ Chat saaf karo</button>
-    <span style="font-size:11px;color:#334155;">Groq Free ✅</span>
+    <span class="mode-hint">➤ = Baat • 🎨 = Image</span>
   </div>
-  <p class="footer">🤖 Saathi AI · Made with ❤️ by Aditya · Groq Free ✅</p>
+  <p class="footer">🤖 Saathi AI · Made with ❤️ by Aditya · Groq + Hugging Face ✅</p>
 
 <script>
 var GROQ_KEY = "";
+var HF_KEY = "";
 var chatHistory = [];
+var imgWidth = "1024";
+var imgHeight = "1024";
+
+function setRatio(btn, w, h) {
+  imgWidth = w; imgHeight = h;
+  document.querySelectorAll('.ratio-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
 
 function saveKey() {
   var val = document.getElementById("api-key-input").value.trim();
-  if (val === "") {
-    alert("Key box khali hai! Key paste karo pehle.");
-    return;
-  }
+  if (!val) { alert("Key box khali hai!"); return; }
   GROQ_KEY = val;
-  var status = document.getElementById("key-status");
-  status.textContent = "✅ Ready!";
-  status.className = "key-status ready";
+  var s = document.getElementById("key-status");
+  s.textContent = "✅ Ready!"; s.className = "key-status ready";
   document.getElementById("api-key-input").value = "●●●●●●●●●●●●●●●●●●●●";
 }
-
 function clearKey() {
   GROQ_KEY = "";
   document.getElementById("api-key-input").value = "";
-  var status = document.getElementById("key-status");
-  status.textContent = "❌";
-  status.className = "key-status";
+  var s = document.getElementById("key-status");
+  s.textContent = "❌"; s.className = "key-status";
+}
+function saveHFKey() {
+  var val = document.getElementById("hf-key-input").value.trim();
+  if (!val) { alert("HF key box khali hai!"); return; }
+  HF_KEY = val;
+  var s = document.getElementById("hf-status");
+  s.textContent = "🎨 Ready!"; s.className = "hf-status ready";
+  document.getElementById("hf-key-input").value = "●●●●●●●●●●●●●●●●●●●●";
+}
+function clearHFKey() {
+  HF_KEY = "";
+  document.getElementById("hf-key-input").value = "";
+  var s = document.getElementById("hf-status");
+  s.textContent = "❌"; s.className = "hf-status";
 }
 
 function handleKey(e) {
-  if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault();
-    sendMessage();
-  }
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
 }
-
 function quickSend(btn) {
   document.getElementById("user-input").value = btn.textContent.slice(2);
   sendMessage();
 }
+function quickImage(btn) {
+  document.getElementById("user-input").value = btn.textContent.slice(2);
+  generateImage();
+}
 
 function sendMessage() {
-  if (!GROQ_KEY) {
-    alert("Pehle Groq API key daalo aur Save karo!");
-    return;
-  }
+  if (!GROQ_KEY) { alert("Pehle Groq API key daalo!"); return; }
   var input = document.getElementById("user-input");
   var text = input.value.trim();
   if (!text) return;
-
   var emptyState = document.getElementById("empty-state");
   if (emptyState) emptyState.remove();
-
   chatHistory.push({ role: "user", content: text });
   addMessage("user", text);
   input.value = "";
-
   document.getElementById("send-btn").disabled = true;
   var typingId = showTyping();
-
   var xhr = new XMLHttpRequest();
   xhr.open("POST", "https://api.groq.com/openai/v1/chat/completions");
   xhr.setRequestHeader("Content-Type", "application/json");
   xhr.setRequestHeader("Authorization", "Bearer " + GROQ_KEY);
-
   xhr.onload = function() {
     removeTyping(typingId);
     if (xhr.status === 200) {
@@ -166,30 +214,60 @@ function sendMessage() {
       chatHistory.push({ role: "assistant", content: reply });
       addMessage("ai", reply);
     } else {
-      var err = JSON.parse(xhr.responseText);
-      addMessage("ai", "❌ Error: " + (err.error ? err.error.message : "Kuch gadbad hui!"));
+      addMessage("ai", "❌ Error aaya! Key check karo.");
     }
     document.getElementById("send-btn").disabled = false;
   };
-
   xhr.onerror = function() {
     removeTyping(typingId);
-    addMessage("ai", "❌ Internet check karo aur dobara try karo! 🙏");
+    addMessage("ai", "❌ Internet check karo!");
     document.getElementById("send-btn").disabled = false;
   };
-
-  var body = {
+  xhr.send(JSON.stringify({
     model: "llama-3.1-8b-instant",
     max_tokens: 800,
-    messages: [
-      {
-        role: "system",
-        content: "Tum Saathi AI ho — Aditya ke banaye hue smart AI dost. Aditya ne tumhe banaya hai. Jab koi pooche ki tumhe kisne banaya toh kaho Mujhe Aditya bhai ne banaya hai! Hindi mein pooche toh Hindi mein jawab do, English mein pooche toh English mein. Har jawab mein emojis use karo. Warm aur friendly raho."
-      }
-    ].concat(chatHistory)
-  };
+    messages: [{ role: "system", content: "Tum Saathi AI ho — Aditya ke banaye hue smart AI dost. Mujhe Aditya bhai ne banaya hai! Hindi mein pooche toh Hindi mein jawab do, English mein pooche toh English mein. Har jawab mein emojis use karo. Warm aur friendly raho." }].concat(chatHistory)
+  }));
+}
 
-  xhr.send(JSON.stringify(body));
+function generateImage() {
+  if (!HF_KEY) { alert("Pehle Hugging Face key daalo!"); return; }
+  var input = document.getElementById("user-input");
+  var prompt = input.value.trim();
+  if (!prompt) { alert("Kya banana hai? Pehle likho!"); return; }
+  var emptyState = document.getElementById("empty-state");
+  if (emptyState) emptyState.remove();
+  var selectedRatio = document.querySelector('.ratio-btn.active').dataset.label;
+  addMessage("user", "🎨 Image banao (" + selectedRatio + "): " + prompt);
+  input.value = "";
+  document.getElementById("img-btn").disabled = true;
+  var typingId = showTypingImage();
+  var xhr = new XMLHttpRequest();
+  xhr.open("POST", "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell");
+  xhr.setRequestHeader("Authorization", "Bearer " + HF_KEY);
+  xhr.setRequestHeader("Content-Type", "application/json");
+  xhr.responseType = "blob";
+  xhr.onload = function() {
+    removeTyping(typingId);
+    document.getElementById("img-btn").disabled = false;
+    if (xhr.status === 200) {
+      var url = URL.createObjectURL(xhr.response);
+      addImageMessage(url, prompt, selectedRatio);
+    } else if (xhr.status === 503) {
+      addMessage("ai", "⏳ Model load ho raha hai, 30 second baad try karo!");
+    } else {
+      addMessage("ai", "❌ Image nahi bani. HF key check karo!");
+    }
+  };
+  xhr.onerror = function() {
+    removeTyping(typingId);
+    document.getElementById("img-btn").disabled = false;
+    addMessage("ai", "❌ Internet check karo!");
+  };
+  xhr.send(JSON.stringify({
+    inputs: prompt,
+    parameters: { width: parseInt(imgWidth), height: parseInt(imgHeight) }
+  }));
 }
 
 function addMessage(role, text) {
@@ -208,30 +286,53 @@ function addMessage(role, text) {
   container.scrollTop = container.scrollHeight;
 }
 
+function addImageMessage(imgUrl, prompt, ratio) {
+  var container = document.getElementById("messages");
+  var div = document.createElement("div");
+  div.className = "msg ai";
+  var avatar = document.createElement("div");
+  avatar.className = "avatar";
+  avatar.style.background = "linear-gradient(135deg, #6366f1, #4f46e5)";
+  avatar.textContent = "🎨";
+  var bubble = document.createElement("div");
+  bubble.className = "bubble";
+  bubble.innerHTML = '✅ <strong>"' + prompt + '"</strong> (' + ratio + ')<br>';
+  var img = document.createElement("img");
+  img.src = imgUrl;
+  img.alt = prompt;
+  img.title = "Long press karke save karo!";
+  bubble.appendChild(img);
+  div.appendChild(avatar);
+  div.appendChild(bubble);
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
 function showTyping() {
   var container = document.getElementById("messages");
   var id = "t" + Date.now();
   var div = document.createElement("div");
-  div.className = "typing-bubble";
-  div.id = id;
+  div.className = "typing-bubble"; div.id = id;
   div.innerHTML = '<div class="avatar">🤖</div><div class="typing-dots"><span></span><span></span><span></span></div>';
   container.appendChild(div);
   container.scrollTop = container.scrollHeight;
   return id;
 }
-
+function showTypingImage() {
+  var container = document.getElementById("messages");
+  var id = "t" + Date.now();
+  var div = document.createElement("div");
+  div.className = "typing-bubble"; div.id = id;
+  div.innerHTML = '<div class="avatar" style="background:linear-gradient(135deg,#6366f1,#4f46e5)">🎨</div><div class="typing-dots"><span style="background:#6366f1"></span><span style="background:#6366f1"></span><span style="background:#6366f1"></span></div>';
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  return id;
+}
 function removeTyping(id) {
   var el = document.getElementById(id);
   if (el) el.remove();
 }
-
 function clearChat() {
   chatHistory = [];
-  document.getElementById("messages").innerHTML = '<div class="empty-state" id="empty-state"><span class="big">🌈💫</span><h3>🔥 Koi bhi sawaal daaro!</h3><p>📚 Science • 🧮 Maths • 🌍 History • 💡 GK • 🎁 Gift Ideas</p><div class="suggestions"><button class="suggestion-btn" onclick="quickSend(this)">🌿 Photosynthesis kya hai?</button><button class="suggestion-btn" onclick="quickSend(this)">⚡ Newton ke laws?</button><button class="suggestion-btn" onclick="quickSend(this)">🎁 Bhai ko gift kya doon?</button><button class="suggestion-btn" onclick="quickSend(this)">🧮 Pythagoras theorem?</button><button class="suggestion-btn" onclick="quickSend(this)">😊 Kaise ho tum?</button></div></div>';
-}
-</script>
-</body>
-        </html>
-
+  document.getElementById("messages").innerHTML = '<div class="empty-state" id="empty-state"><span class="big">🌈💫</span><h3>🔥 Koi bhi sawaal daaro!</h3><p>📚 Science • 🧮 Maths • 🌍 History • 💡 GK • 🎨 Images</p><div class="suggestions"><button class="suggestion-btn" onclick="quickSend(this)">🌿 Photosynthesis kya hai?</button><button class="suggestion-btn" onclick="quickSend(this)">⚡ Newton ke laws?</button><button class="suggestion-btn" onclick="quickSend(this)">🎁 Bhai ko gift kya doon?</button><button class="suggestion-btn" onclick="quickSend(this)">🧮 Pythagoras theorem?</button><button class="suggestion-btn" onclick="quickSend(this)">😊 Kaise ho tum?</button></div><div class="suggestions" style="margin-top:8px;"><button class="img-suggestion-btn" onclick="qu
     
-       
