@@ -85,23 +85,23 @@
   <div class="chat-box">
     <div class="key-bar">
       <input type="password" id="api-key-input" placeholder="🔑 Groq key yahan paste karo..." />
-      <button class="save-btn" onclick="saveKey()">✅ Save</button>
-      <button class="clear-btn2" onclick="clearKey()">✕</button>
+      <button type="button" class="save-btn" onclick="saveKey()">✅ Save</button>
+      <button type="button" class="clear-btn2" onclick="clearKey()">✕</button>
       <span class="key-status" id="key-status">❌</span>
     </div>
     <div class="hf-bar">
       <input type="password" id="hf-key-input" placeholder="🎨 Hugging Face key yahan paste karo..." />
-      <button class="save-btn" onclick="saveHFKey()">✅ Save</button>
-      <button class="clear-btn2" onclick="clearHFKey()">✕</button>
+      <button type="button" class="save-btn" onclick="saveHFKey()">✅ Save</button>
+      <button type="button" class="clear-btn2" onclick="clearHFKey()">✕</button>
       <span class="hf-status" id="hf-status">❌</span>
     </div>
     <div class="ratio-bar">
       <span>📐 Image Size:</span>
-      <button class="ratio-btn active" onclick="setRatio(this,'1024','1024')" data-label="1:1 Square">🟦 1:1</button>
-      <button class="ratio-btn" onclick="setRatio(this,'1344','768')" data-label="16:9 Landscape">🖥️ 16:9</button>
-      <button class="ratio-btn" onclick="setRatio(this,'768','1344')" data-label="9:16 Portrait">📱 9:16</button>
-      <button class="ratio-btn" onclick="setRatio(this,'1216','832')" data-label="3:2 Photo">🖼️ 3:2</button>
-      <button class="ratio-btn" onclick="setRatio(this,'832','1216')" data-label="2:3 Portrait">📷 2:3</button>
+      <button type="button" class="ratio-btn active" onclick="setRatio(this,'1024','1024')" data-label="1:1 Square">🟦 1:1</button>
+      <button type="button" class="ratio-btn" onclick="setRatio(this,'1344','768')" data-label="16:9 Landscape">🖥️ 16:9</button>
+      <button type="button" class="ratio-btn" onclick="setRatio(this,'768','1344')" data-label="9:16 Portrait">📱 9:16</button>
+      <button type="button" class="ratio-btn" onclick="setRatio(this,'1216','832')" data-label="3:2 Photo">🖼️ 3:2</button>
+      <button type="button" class="ratio-btn" onclick="setRatio(this,'832','1216')" data-label="2:3 Portrait">📷 2:3</button>
     </div>
     <div class="messages" id="messages">
       <div class="empty-state" id="empty-state">
@@ -125,13 +125,13 @@
     </div>
     <div class="input-area">
       <textarea id="user-input" rows="1" placeholder="✍️ Sawaal likho ya 🎨 image banao..." onkeydown="handleKey(event)"></textarea>
-      <button class="send-btn" id="send-btn" onclick="sendMessage()" title="Jawab lo">➤</button>
-      <button class="img-btn" id="img-btn" onclick="generateImage()" title="Image banao">🎨</button>
+      <button type="button" class="send-btn" id="send-btn" onclick="sendMessage()" title="Jawab lo">➤</button>
+      <button type="button" class="img-btn" id="img-btn" onclick="generateImage()" title="Image banao">🎨</button>
     </div>
   </div>
 
   <div class="bottom-bar">
-    <button class="clear-btn" onclick="clearChat()">🗑️ Chat saaf karo</button>
+    <button type="button" class="clear-btn" onclick="clearChat()">🗑️ Chat saaf karo</button>
     <span class="mode-hint">➤ = Baat • 🎨 = Image</span>
   </div>
   <p class="footer">🤖 Saathi AI · Made with ❤️ by Aditya · Groq + Hugging Face ✅</p>
@@ -334,5 +334,5 @@ function removeTyping(id) {
 }
 function clearChat() {
   chatHistory = [];
-  document.getElementById("messages").innerHTML = '<div class="empty-state" id="empty-state"><span class="big">🌈💫</span><h3>🔥 Koi bhi sawaal daaro!</h3><p>📚 Science • 🧮 Maths • 🌍 History • 💡 GK • 🎨 Images</p><div class="suggestions"><button class="suggestion-btn" onclick="quickSend(this)">🌿 Photosynthesis kya hai?</button><button class="suggestion-btn" onclick="quickSend(this)">⚡ Newton ke laws?</button><button class="suggestion-btn" onclick="quickSend(this)">🎁 Bhai ko gift kya doon?</button><button class="suggestion-btn" onclick="quickSend(this)">🧮 Pythagoras theorem?</button><button class="suggestion-btn" onclick="quickSend(this)">😊 Kaise ho tum?</button></div><div class="suggestions" style="margin-top:8px;"><button class="img-suggestion-btn" onclick="qu
-    
+  document.getElementById("messages").innerHTML = '<div class="empty-state" id="empty-state"><span class="big">🌈💫</span><h3>🔥 Koi bhi sawaal daaro!</h3><p>📚 Science • 🧮 Maths • 🌍 History • 💡 GK • 🎨 Images</p><div class="suggestions"><button class="suggestion-btn" onclick="quickSend(this)">🌿 Photosynthesis kya hai?</button><button class="suggestion-btn" onclick="quickSend(this)">⚡ Newton ke laws?</button><button class="suggestion-btn" onclick="quickSend(this)">🎁 Bhai ko gift kya doon?</button><button class="suggestion-btn" onclick="quickSend(this)">🧮 Pythagoras theorem?</button><button class="
+  
