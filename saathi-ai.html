@@ -84,13 +84,13 @@
 
   <div class="chat-box">
     <div class="key-bar">
-      <input type="password" id="api-key-input" placeholder="🔑 Groq key yahan paste karo..." />
+      <input type="text" id="api-key-input" placeholder="🔑 Groq key yahan paste karo..." />
       <button type="button" class="save-btn" onclick="saveKey()">✅ Save</button>
       <button type="button" class="clear-btn2" onclick="clearKey()">✕</button>
       <span class="key-status" id="key-status">❌</span>
     </div>
     <div class="hf-bar">
-      <input type="password" id="hf-key-input" placeholder="🎨 Hugging Face key yahan paste karo..." />
+      <input type="text" id="hf-key-input" placeholder="🎨 Hugging Face key yahan paste karo..." />
       <button type="button" class="save-btn" onclick="saveHFKey()">✅ Save</button>
       <button type="button" class="clear-btn2" onclick="clearHFKey()">✕</button>
       <span class="hf-status" id="hf-status">❌</span>
@@ -334,5 +334,4 @@ function removeTyping(id) {
 }
 function clearChat() {
   chatHistory = [];
-  document.getElementById("messages").innerHTML = '<div class="empty-state" id="empty-state"><span class="big">🌈💫</span><h3>🔥 Koi bhi sawaal daaro!</h3><p>📚 Science • 🧮 Maths • 🌍 History • 💡 GK • 🎨 Images</p><div class="suggestions"><button class="suggestion-btn" onclick="quickSend(this)">🌿 Photosynthesis kya hai?</button><button class="suggestion-btn" onclick="quickSend(this)">⚡ Newton ke laws?</button><button class="suggestion-btn" onclick="quickSend(this)">🎁 Bhai ko gift kya doon?</button><button class="suggestion-btn" onclick="quickSend(this)">🧮 Pythagoras theorem?</button><button class="
-  
+  document.getElementById("messages").innerHTML = '<div class="empty-state" id="empty-state"><span class="big">🌈💫</span><h3>🔥 Koi bhi sawaal daaro!</h3><p>📚 Science • 🧮 Maths • 🌍 History • 💡 GK • 🎨 Images</p><div class="suggestions"><button class="suggestion-btn" onclick="quickSend(this)">🌿 Photosynthesis kya hai?</button><button class="suggestion-btn" onclick="quickSend(this)">⚡ Newton ke laws?</button><button class="suggestion-btn" onclick="quickSend(this)">🎁 Bhai ko gift kya doon?</button><button class="suggestion-btn" onclick="quickSend(this)">🧮 Pythagoras theorem?</button><button class="suggesti
