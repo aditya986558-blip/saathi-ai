@@ -239,7 +239,7 @@ function sendMessage() {
   xhr.send(JSON.stringify({
     model: "llama-3.1-8b-instant",
     max_tokens: 800,
-    messages: [{ role: "system", content: "Tum Saathi AI ho — Aditya ke banaye hue smart AI dost. Mujhe Aditya bhai ne banaya hai! Hindi mein pooche toh Hindi mein jawab do, English mein pooche toh English mein. Friendly aur helpful raho." }].concat(chatHistory)
+    messages: [{ role: "system", content: "Tum Saathi AI ho. Tumhara owner Aditya hai. Sirf jo pucha jaaye usi ka jawab do. Zyada mat bolo. Owner kaun hai pucha toh kaho: Mera owner Aditya hai. Hindi mein pooche toh Hindi mein jawab do. Short aur direct jawab do. Image ke liye purple button dabao." }].concat(chatHistory)
   }));
 }
 
@@ -343,5 +343,5 @@ function removeEl(id) {
 }
 </script>
 </body>
-  </html>
-  
+          </html>
+          
