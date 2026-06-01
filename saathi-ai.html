@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Inter', sans-serif; background: #0a0a0a; min-height: 100vh; display: flex; flex-direction: column; align-items: center; color: #e2e8f0; }
+    body { font-family: 'Inter', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', sans-serif; background: #0a0a0a; min-height: 100vh; display: flex; flex-direction: column; align-items: center; color: #e2e8f0; }
     #setup-screen { width: 100%; max-width: 420px; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 24px; }
     .setup-logo { font-size: 48px; margin-bottom: 16px; }
     .setup-title { font-size: 28px; font-weight: 700; color: #fff; margin-bottom: 6px; }
@@ -33,7 +33,7 @@
     .empty-title { font-size: 22px; font-weight: 600; color: #fff; }
     .empty-sub { font-size: 14px; color: #64748b; line-height: 1.6; }
     .chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 20px; }
-    .chip { background: #111; border: 1px solid #1e1e1e; color: #94a3b8; border-radius: 20px; padding: 8px 14px; font-size: 13px; cursor: pointer; font-family: 'Inter', sans-serif; }
+    .chip { background: #111; border: 1px solid #1e1e1e; color: #94a3b8; border-radius: 20px; padding: 8px 14px; font-size: 13px; cursor: pointer; font-family: 'Inter', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; }
     .chip.img-chip { border-color: rgba(59,130,246,0.2); color: #60a5fa; }
     .msg { display: flex; gap: 12px; align-items: flex-start; animation: fadeIn 0.3s ease; }
     .msg.user { flex-direction: row-reverse; }
@@ -58,7 +58,7 @@
     textarea::placeholder { color: #374151; }
     .send-btn { background: #3b82f6; border: none; border-radius: 8px; width: 36px; height: 36px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
     .send-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-    .img-send-btn { background: #7c3aed; border: none; border-radius: 8px; width: 36px; height: 36px; font-size: 16px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+    .img-send-btn { background: #7c3aed; border: none; border-radius: 8px; width: 36px; height: 36px; font-size: 16px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif; }
     .img-send-btn:disabled { opacity: 0.3; cursor: not-allowed; }
     .input-hint { font-size: 11px; color: #1e293b; text-align: center; margin-top: 8px; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
@@ -70,18 +70,18 @@
 <div id="setup-screen">
   <div class="setup-logo">🤖</div>
   <div class="setup-title">Saathi AI</div>
-  <div class="setup-sub">Tumhara smart AI dost<br/>baat karo, images banao</div>
+  <div class="setup-sub">Tumhara apna AI yaar —<br/>baat karo, images bhi banao</div>
   <div class="setup-card">
     <div class="input-group">
       <label>GROQ API KEY</label>
       <input type="text" class="setup-input" id="groq-input" placeholder="gsk_..."/>
     </div>
     <div class="input-group">
-      <label>HUGGING FACE TOKEN (images ke liye)</label>
+      <label>HUGGING FACE TOKEN — images ke liye</label>
       <input type="text" class="setup-input" id="hf-input" placeholder="hf_..."/>
     </div>
-    <button type="button" class="start-btn" id="start-btn">Shuru Karo →</button>
-    <button type="button" class="skip-btn" id="skip-btn">Skip (sirf chat)</button>
+    <button type="button" class="start-btn" id="start-btn">Chalo Shuru! →</button>
+    <button type="button" class="skip-btn" id="skip-btn">Skip karo (sirf chat)</button>
   </div>
 </div>
 
@@ -93,19 +93,19 @@
       <div class="topbar-badge">by Aditya</div>
     </div>
     <div style="display:flex;">
-      <button type="button" class="icon-btn" id="clear-btn">🗑</button>
+      <button type="button" class="icon-btn" id="clear-btn">🗑️</button>
     </div>
   </div>
   <div class="messages" id="messages">
     <div class="empty-state" id="empty-state">
       <div class="empty-icon">✨</div>
-      <div class="empty-title">Kya jaanna chahte ho?</div>
-      <div class="empty-sub">Koi bhi sawaal poochho ya image banao</div>
+      <div class="empty-title">Bol, kya help chahiye?</div>
+      <div class="empty-sub">Koi bhi sawaal poochho ya image banaao — main hoon na</div>
       <div class="chips">
         <button type="button" class="chip" id="c1">Photosynthesis kya hai?</button>
         <button type="button" class="chip" id="c2">Newton ke laws?</button>
         <button type="button" class="chip" id="c3">Bhai ko gift kya doon?</button>
-        <button type="button" class="chip" id="c4">Kaise ho tum?</button>
+        <button type="button" class="chip" id="c4">Kya chal raha hai tere saath?</button>
         <button type="button" class="chip img-chip" id="c5">🎨 Sunset over ocean</button>
         <button type="button" class="chip img-chip" id="c6">🎨 Futuristic city</button>
         <button type="button" class="chip img-chip" id="c7">🎨 Mountain landscape</button>
@@ -113,7 +113,7 @@
     </div>
   </div>
   <div class="ratio-bar">
-    <span class="ratio-label">Image Size:</span>
+    <span class="ratio-label">Image size:</span>
     <button type="button" class="ratio-btn active" id="r1" data-w="1024" data-h="1024">1:1</button>
     <button type="button" class="ratio-btn" id="r2" data-w="1344" data-h="768">16:9</button>
     <button type="button" class="ratio-btn" id="r3" data-w="768" data-h="1344">9:16</button>
@@ -138,7 +138,6 @@ var HF_KEY = localStorage.getItem("saathi_hf") || "";
 var chatHistory = [];
 var imgW = 1024, imgH = 1024;
 
-// Agar keys pehle se saved hain toh seedha chat kholo
 window.addEventListener("load", function() {
   if (GROQ_KEY) {
     document.getElementById("setup-screen").style.display = "none";
@@ -146,7 +145,6 @@ window.addEventListener("load", function() {
   }
 });
 
-// Setup buttons
 document.getElementById("start-btn").addEventListener("click", function() {
   var g = document.getElementById("groq-input").value.trim();
   var h = document.getElementById("hf-input").value.trim();
@@ -161,13 +159,11 @@ document.getElementById("skip-btn").addEventListener("click", function() {
   document.getElementById("chat-screen").style.display = "flex";
 });
 
-// Clear chat
 document.getElementById("clear-btn").addEventListener("click", function() {
   chatHistory = [];
-  document.getElementById("messages").innerHTML = '<div class="empty-state" id="empty-state"><div class="empty-icon">✨</div><div class="empty-title">Kya jaanna chahte ho?</div><div class="empty-sub">Koi bhi sawaal poochho ya image banao</div></div>';
+  document.getElementById("messages").innerHTML = '<div class="empty-state" id="empty-state"><div class="empty-icon">✨</div><div class="empty-title">Bol, kya help chahiye?</div><div class="empty-sub">Koi bhi sawaal poochho ya image banaao — main hoon na</div></div>';
 });
 
-// Ratio buttons
 document.querySelectorAll('.ratio-btn').forEach(function(btn) {
   btn.addEventListener("click", function() {
     document.querySelectorAll('.ratio-btn').forEach(function(b) { b.classList.remove('active'); });
@@ -177,7 +173,6 @@ document.querySelectorAll('.ratio-btn').forEach(function(btn) {
   });
 });
 
-// Chip buttons
 ["c1","c2","c3","c4"].forEach(function(id) {
   var el = document.getElementById(id);
   if (el) el.addEventListener("click", function() {
@@ -188,24 +183,21 @@ document.querySelectorAll('.ratio-btn').forEach(function(btn) {
 ["c5","c6","c7"].forEach(function(id) {
   var el = document.getElementById(id);
   if (el) el.addEventListener("click", function() {
-    document.getElementById("user-input").value = el.textContent.slice(3);
+    // emoji is 2 code units + 1 space = slice from index 3
+    document.getElementById("user-input").value = el.textContent.replace(/^\S+\s/, "");
     generateImage();
   });
 });
 
-// Send on Enter
 document.getElementById("user-input").addEventListener("keydown", function(e) {
   if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
 });
 
-// Send button
 document.getElementById("send-btn").addEventListener("click", sendMessage);
-
-// Image button
 document.getElementById("img-btn").addEventListener("click", generateImage);
 
 function sendMessage() {
-  if (!GROQ_KEY) { alert("Groq key nahi hai! Page reload karo aur key daalo."); return; }
+  if (!GROQ_KEY) { alert("Arre bhai, Groq key nahi daali! Page reload karo aur daalo."); return; }
   var input = document.getElementById("user-input");
   var text = input.value.trim();
   if (!text) return;
@@ -227,27 +219,27 @@ function sendMessage() {
       chatHistory.push({ role: "assistant", content: reply });
       addMsg("ai", reply);
     } else {
-      addMsg("ai", "❌ Error! Groq key check karo.");
+      addMsg("ai", "❌ Kuch gadbad ho gayi — Groq key ek baar check kar lo.");
     }
     document.getElementById("send-btn").disabled = false;
   };
   xhr.onerror = function() {
     removeEl(tid);
-    addMsg("ai", "❌ Internet check karo!");
+    addMsg("ai", "❌ Net thoda check karo, connect nahi ho pa raha.");
     document.getElementById("send-btn").disabled = false;
   };
   xhr.send(JSON.stringify({
     model: "llama-3.1-8b-instant",
     max_tokens: 800,
-    messages: [{ role: "system", content: "You are Saathi AI, created by Aditya. Talk like a friendly human — natural and casual. Use emojis only where they naturally fit. Keep answers short — 1 to 2 lines max unless detail is needed. For greetings like kya haal hai, kaise ho, hi, hello — reply casually like: Sab badhiya! Batao kya help chahiye? Never give unnecessary explanations. If asked your name say: Saathi AI. If asked who made you: Aditya ne banaya hai. Use aap or tum, never tujhe. Reply in Hindi if asked in Hindi, English if asked in English. For images: purple button dabao." }].concat(chatHistory)
+    messages: [{ role: "system", content: "Tu Saathi AI hai, Aditya ne banaya hai tujhe. Ek real dost ki tarah baat kar — casual, warm, seedha point pe aa. Emojis wahi use kar jahan naturally fit ho, har jagah mat thons. Jawab chhota rakh — 1-2 lines kafi hain jab tak detail genuinely zaroori na ho. Greetings pe casually bol jaise: 'Sab badhiya yaar! Batao kya help chahiye?' Bakwaas intro ya unnecessary explanation bilkul mat de. Name poochhe toh: Saathi AI. Kisne banaya: Aditya ne. 'Aap' ya 'tum' use kar context ke hisaab se, 'tujhe' mat bol. Hindi mein poochhe toh Hindi/Hinglish mein jawab, English mein poochhe toh English. Image banana ho toh purple wala 🎨 button dabao." }].concat(chatHistory)
   }));
 }
 
 function generateImage() {
-  if (!HF_KEY) { alert("HF token nahi hai! Page reload karo aur token daalo."); return; }
+  if (!HF_KEY) { alert("Bhai, Hugging Face token nahi daala! Reload karo aur daalo."); return; }
   var input = document.getElementById("user-input");
   var prompt = input.value.trim();
-  if (!prompt) { alert("Kya banana hai? Pehle likho!"); return; }
+  if (!prompt) { alert("Pehle likh toh kya banana hai!"); return; }
   removeEmpty();
   addMsg("user", "🎨 " + prompt);
   input.value = "";
@@ -265,15 +257,15 @@ function generateImage() {
       var url = URL.createObjectURL(xhr.response);
       addImgMsg(url);
     } else if (xhr.status === 503) {
-      addMsg("ai", "⏳ Model load ho raha hai, 30 sec baad try karo!");
+      addMsg("ai", "⏳ Model abhi warm up ho raha hai — 30 seconds ruko phir try karo!");
     } else {
-      addMsg("ai", "❌ Image nahi bani. HF token check karo!");
+      addMsg("ai", "❌ Image nahi bani yaar — HF token ek baar check kar lo.");
     }
   };
   xhr.onerror = function() {
     removeEl(tid);
     document.getElementById("img-btn").disabled = false;
-    addMsg("ai", "❌ Internet check karo!");
+    addMsg("ai", "❌ Net thoda check karo, connect nahi ho pa raha.");
   };
   xhr.send(JSON.stringify({ inputs: prompt, parameters: { width: imgW, height: imgH } }));
 }
@@ -360,5 +352,4 @@ function removeEl(id) {
 }
 </script>
 </body>
-          </html>
-          
+</html>
