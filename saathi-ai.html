@@ -292,10 +292,27 @@ function addMsg(role, text) {
   av.textContent = role === "user" ? "👤" : "🤖";
   var bub = document.createElement("div");
   bub.className = "bubble";
-  bub.innerHTML = text.replace(/\n/g,"<br>").replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>");
   div.appendChild(av); div.appendChild(bub);
   c.appendChild(div);
   c.scrollTop = c.scrollHeight;
+
+  if (role === "ai") {
+    var formatted = text.replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>").replace(/\n/g,"<br>");
+    var words = formatted.split(" ");
+    var i = 0;
+    bub.innerHTML = "";
+    var interval = setInterval(function() {
+      if (i < words.length) {
+        bub.innerHTML += (i === 0 ? "" : " ") + words[i];
+        i++;
+        c.scrollTop = c.scrollHeight;
+      } else {
+        clearInterval(interval);
+      }
+    }, 30);
+  } else {
+    bub.innerHTML = text.replace(/\n/g,"<br>").replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>");
+  }
 }
 
 function addImgMsg(url) {
@@ -343,5 +360,5 @@ function removeEl(id) {
 }
 </script>
 </body>
-  </html>
+          </html>
   
