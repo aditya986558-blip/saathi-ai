@@ -355,8 +355,8 @@
 </div><!-- /chat-screen -->
 
 <script>
-var GROQ_KEY = localStorage.getItem("saathi_groq") || "";
-var HF_KEY   = localStorage.getItem("saathi_hf")   || "";
+var GROQ_KEY = "";
+var HF_KEY   = "";
 var chatHistory = [];
 var imgW = 1024, imgH = 1024;
 
@@ -373,74 +373,78 @@ SABSE IMPORTANT RULES:
 8. Owner/creator kaun hai: "Mera creator Aditya hai 💪"
 9. Naam pooche: "Main Saathi AI hoon 🤖"`;
 
-// ── Init ──
-window.addEventListener("load", function() {
-  if (GROQ_KEY) showChat();
-});
-
 function showChat() {
   document.getElementById("setup-screen").style.display = "none";
   document.getElementById("chat-screen").style.display = "flex";
 }
 
-// ── Setup buttons ──
-document.getElementById("start-btn").addEventListener("click", function() {
-  var g = document.getElementById("groq-input").value.trim();
-  var h = document.getElementById("hf-input").value.trim();
-  if (g) { GROQ_KEY = g; localStorage.setItem("saathi_groq", g); }
-  if (h) { HF_KEY   = h; localStorage.setItem("saathi_hf",   h); }
-  showChat();
-});
-document.getElementById("skip-btn").addEventListener("click", showChat);
+document.addEventListener("DOMContentLoaded", function() {
+  // load saved keys
+  GROQ_KEY = localStorage.getItem("saathi_groq") || "";
+  HF_KEY   = localStorage.getItem("saathi_hf")   || "";
+  if (GROQ_KEY) showChat();
 
-// ── Clear ──
-document.getElementById("clear-btn").addEventListener("click", function() {
-  chatHistory = [];
-  var m = document.getElementById("messages");
-  m.innerHTML = '';
-  var es = document.createElement("div");
-  es.className = "empty-state"; es.id = "empty-state";
-  es.innerHTML = '<div class="empty-icon">✨</div><div class="empty-title">Kya jaanna chahte ho?</div><div class="empty-sub">Koi bhi sawaal poochho ya image banao</div>';
-  m.appendChild(es);
-});
-
-// ── Ratio buttons ──
-document.querySelectorAll('.ratio-btn').forEach(function(btn) {
-  btn.addEventListener("click", function() {
-    document.querySelectorAll('.ratio-btn').forEach(function(b) { b.classList.remove('active'); });
-    btn.classList.add('active');
-    imgW = parseInt(btn.dataset.w);
-    imgH = parseInt(btn.dataset.h);
+  // ── Setup buttons ──
+  document.getElementById("start-btn").addEventListener("click", function() {
+    var g = document.getElementById("groq-input").value.trim();
+    var h = document.getElementById("hf-input").value.trim();
+    if (!g) { alert("Groq API key daalo!"); return; }
+    GROQ_KEY = g; localStorage.setItem("saathi_groq", g);
+    if (h) { HF_KEY = h; localStorage.setItem("saathi_hf", h); }
+    showChat();
   });
-});
 
-// ── Chips ──
-["c1","c2","c3","c4"].forEach(function(id) {
-  var el = document.getElementById(id);
-  if (el) el.addEventListener("click", function() {
-    document.getElementById("user-input").value = el.textContent;
-    sendMessage();
-  });
-});
-["c5","c6","c7"].forEach(function(id) {
-  var el = document.getElementById(id);
-  if (el) el.addEventListener("click", function() {
-    document.getElementById("user-input").value = el.textContent.slice(3);
-    generateImage();
-  });
-});
+  document.getElementById("skip-btn").addEventListener("click", showChat);
 
-// ── Input ──
-var ta = document.getElementById("user-input");
-ta.addEventListener("input", function() {
-  this.style.height = "auto";
-  this.style.height = Math.min(this.scrollHeight, 120) + "px";
+  // ── Clear ──
+  document.getElementById("clear-btn").addEventListener("click", function() {
+    chatHistory = [];
+    var m = document.getElementById("messages");
+    m.innerHTML = '';
+    var es = document.createElement("div");
+    es.className = "empty-state"; es.id = "empty-state";
+    es.innerHTML = '<div class="empty-icon">✨</div><div class="empty-title">Kya jaanna chahte ho?</div><div class="empty-sub">Koi bhi sawaal poochho ya image banao</div>';
+    m.appendChild(es);
+  });
+
+  // ── Ratio buttons ──
+  document.querySelectorAll('.ratio-btn').forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      document.querySelectorAll('.ratio-btn').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      imgW = parseInt(btn.dataset.w);
+      imgH = parseInt(btn.dataset.h);
+    });
+  });
+
+  // ── Chips ──
+  ["c1","c2","c3","c4"].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener("click", function() {
+      document.getElementById("user-input").value = el.textContent;
+      sendMessage();
+    });
+  });
+  ["c5","c6","c7"].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener("click", function() {
+      document.getElementById("user-input").value = el.textContent.slice(3);
+      generateImage();
+    });
+  });
+
+  // ── Input ──
+  var ta = document.getElementById("user-input");
+  ta.addEventListener("input", function() {
+    this.style.height = "auto";
+    this.style.height = Math.min(this.scrollHeight, 120) + "px";
+  });
+  ta.addEventListener("keydown", function(e) {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  });
+  document.getElementById("send-btn").addEventListener("click", sendMessage);
+  document.getElementById("img-btn").addEventListener("click", generateImage);
 });
-ta.addEventListener("keydown", function(e) {
-  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-});
-document.getElementById("send-btn").addEventListener("click", sendMessage);
-document.getElementById("img-btn").addEventListener("click", generateImage);
 
 // ── Send chat ──
 function sendMessage() {
@@ -544,10 +548,4 @@ function addMsg(role, text) {
   scrollBottom(c);
 
   if (role === "ai") {
-    var formatted = text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>").replace(/\n/g, "<br>");
-    var chars = formatted.split("");
-    var i = 0;
-    (function typeNext() {
-      if (i < chars.length) {
-        bub.innerHTML += chars[i++];
-      
+    var formatted = text.replace(/\*\*(.*?)\*\*
