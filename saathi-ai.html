@@ -297,21 +297,23 @@ function addMsg(role, text) {
   c.scrollTop = c.scrollHeight;
 
   if (role === "ai") {
-    var formatted = text.replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>").replace(/\n/g,"<br>");
-    var words = formatted.split(" ");
+    var formatted = text.replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>").replace(/
+/g,"<br>");
+    var chars = formatted.split("");
     var i = 0;
     bub.innerHTML = "";
-    var interval = setInterval(function() {
-      if (i < words.length) {
-        bub.innerHTML += (i === 0 ? "" : " ") + words[i];
+    function typeNext() {
+      if (i < chars.length) {
+        bub.innerHTML += chars[i];
         i++;
         c.scrollTop = c.scrollHeight;
-      } else {
-        clearInterval(interval);
+        setTimeout(typeNext, 8);
       }
-    }, 30);
+    }
+    typeNext();
   } else {
-    bub.innerHTML = text.replace(/\n/g,"<br>").replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>");
+    bub.innerHTML = text.replace(/
+/g,"<br>").replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>");
   }
 }
 
@@ -360,5 +362,4 @@ function removeEl(id) {
 }
 </script>
 </body>
-          </html>
-  
+</html>
