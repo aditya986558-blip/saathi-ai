@@ -52,8 +52,8 @@
     .ratio-label { font-size: 11px; color: #374151; white-space: nowrap; margin-right: 4px; }
     .ratio-btn { background: transparent; border: 1px solid #1e1e1e; color: #64748b; border-radius: 6px; padding: 4px 10px; font-size: 11px; cursor: pointer; font-family: 'Inter', sans-serif; white-space: nowrap; }
     .ratio-btn.active { background: rgba(59,130,246,0.1); border-color: #3b82f6; color: #60a5fa; }
-    .input-area { position: sticky; bottom: 0; background: rgba(10,10,10,0.95); border-top: 1px solid #1a1a1a; padding: 16px 20px; }
-    .input-box { display: flex; gap: 8px; background: #111; border: 1px solid #1e1e1e; border-radius: 14px; padding: 10px 12px; align-items: flex-end; }
+    .input-area { position: sticky; bottom: 0; background: rgba(10,10,10,0.98); border-top: 1px solid #1a1a1a; padding: 12px 16px; z-index: 10; }
+    .input-box { display: flex; gap: 8px; background: #111; border: 2px solid transparent; border-radius: 14px; padding: 10px 12px; align-items: flex-end; background-clip: padding-box; outline: 2px solid; outline-color: transparent; position: relative; box-shadow: 0 0 0 2px #3b82f6, 0 0 16px rgba(59,130,246,0.2); }
     textarea { flex: 1; background: transparent; border: none; color: #e2e8f0; font-size: 14px; font-family: 'Inter', sans-serif; resize: none; outline: none; line-height: 1.5; max-height: 120px; }
     textarea::placeholder { color: #374151; }
     .send-btn { background: #3b82f6; border: none; border-radius: 8px; width: 36px; height: 36px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
@@ -239,7 +239,7 @@ function sendMessage() {
   xhr.send(JSON.stringify({
     model: "llama-3.1-8b-instant",
     max_tokens: 800,
-    messages: [{ role: "system", content: "Tum Saathi AI ho. Tumhara naam Saathi AI hai. Tumhe Aditya ne banaya hai. Bilkul natural dost ki tarah baat karo. RULES: 1) Naam pucha toh kaho: Saathi AI. 2) Kisne banaya pucha toh kaho: Mujhe Aditya ne banaya hai. 3) Kaise ho pucha toh kaho: Theek hoon! Batao kya help chahiye? 4) Har jawab short rakho 1-2 lines. 5) Sirf jo pucha wahi batao, extra kuch mat jodo. 6) Hindi mein pooche toh Hindi, English mein English. 7) Image ke liye: purple button dabao." }].concat(chatHistory)
+    messages: [{ role: "system", content: "You are Saathi AI, created by Aditya. Respond like ChatGPT — natural, helpful, and human. Use emojis naturally where they fit the sentence, not on every line. Keep answers short and to the point — 1 to 3 lines max unless a detailed answer is needed. Never say unnecessary things. If asked your name say: Saathi AI. If asked who made you say: Aditya ne banaya hai. Always be respectful, use aap or tum, never tujhe. Reply in Hindi if asked in Hindi, English if asked in English. For images tell user to use the purple button." }].concat(chatHistory)
   }));
 }
 
@@ -344,5 +344,4 @@ function removeEl(id) {
 </script>
 </body>
   </html>
-      
-      
+  
