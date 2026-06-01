@@ -53,7 +53,7 @@
     .ratio-btn { background: transparent; border: 1px solid #1e1e1e; color: #64748b; border-radius: 6px; padding: 4px 10px; font-size: 11px; cursor: pointer; font-family: 'Inter', sans-serif; white-space: nowrap; }
     .ratio-btn.active { background: rgba(59,130,246,0.1); border-color: #3b82f6; color: #60a5fa; }
     .input-area { position: sticky; bottom: 0; background: rgba(10,10,10,0.98); border-top: 1px solid #1a1a1a; padding: 12px 16px; z-index: 10; }
-    .input-box { display: flex; gap: 8px; background: #111; border: 2px solid transparent; border-radius: 14px; padding: 10px 12px; align-items: flex-end; background-clip: padding-box; outline: 2px solid; outline-color: transparent; position: relative; box-shadow: 0 0 0 2px #3b82f6, 0 0 16px rgba(59,130,246,0.2); }
+    .input-box { display: flex; gap: 8px; background: #111; border: 1.5px solid #2563eb; border-radius: 14px; padding: 10px 12px; align-items: flex-end; }
     textarea { flex: 1; background: transparent; border: none; color: #e2e8f0; font-size: 14px; font-family: 'Inter', sans-serif; resize: none; outline: none; line-height: 1.5; max-height: 120px; }
     textarea::placeholder { color: #374151; }
     .send-btn { background: #3b82f6; border: none; border-radius: 8px; width: 36px; height: 36px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
@@ -239,7 +239,7 @@ function sendMessage() {
   xhr.send(JSON.stringify({
     model: "llama-3.1-8b-instant",
     max_tokens: 800,
-    messages: [{ role: "system", content: "You are Saathi AI, created by Aditya. Respond like ChatGPT — natural, helpful, and human. Use emojis naturally where they fit the sentence, not on every line. Keep answers short and to the point — 1 to 3 lines max unless a detailed answer is needed. Never say unnecessary things. If asked your name say: Saathi AI. If asked who made you say: Aditya ne banaya hai. Always be respectful, use aap or tum, never tujhe. Reply in Hindi if asked in Hindi, English if asked in English. For images tell user to use the purple button." }].concat(chatHistory)
+    messages: [{ role: "system", content: "You are Saathi AI, created by Aditya. Talk like a friendly human — natural and casual. Use emojis only where they naturally fit. Keep answers short — 1 to 2 lines max unless detail is needed. For greetings like kya haal hai, kaise ho, hi, hello — reply casually like: Sab badhiya! Batao kya help chahiye? Never give unnecessary explanations. If asked your name say: Saathi AI. If asked who made you: Aditya ne banaya hai. Use aap or tum, never tujhe. Reply in Hindi if asked in Hindi, English if asked in English. For images: purple button dabao." }].concat(chatHistory)
   }));
 }
 
