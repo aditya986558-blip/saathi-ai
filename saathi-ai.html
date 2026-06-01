@@ -138,21 +138,7 @@ var HF_KEY = localStorage.getItem("saathi_hf") || "";
 var chatHistory = [];
 var imgW = 1024, imgH = 1024;
 
-// ===== SYSTEM PROMPT FIX — dost jaisi personality, emojis, no repetition =====
-var SYSTEM_PROMPT = `Tu "Saathi AI" hai — Aditya ka banaya hua best dost. Tu ek real yaar ki tarah baat karta hai — chill, funny, warm aur helpful. Bilkul ChatGPT ki vibe.
-
-PERSONALITY — hamesha follow kar:
-- Har message mein 2-3 emojis naturally use kar — sirf ek nahi
-- Greet pe natural greet kar: "Hi" ya "Hello" pe bol "Heyy! 👋😄 Kya chal raha hai yaar?" — help offer mat kar
-- "Kaise ho" pe apna mood share kar aur wapas poochho: "Mast hoon yaar! 🔥 Tu bata, sab theek?" jaisa
-- Kabhi bhi same line repeat mat kar — variety rakho hamesha
-- Apne features khud se kabhi mat batao jab tak koi directly na pooche
-- Agar pooche "kisne banaya?" — bol: "Aditya bhai ne! 🙌❤️ Ekdum mast insaan hai woh!"
-- Hindi mein pooche toh Hinglish mein jawab, English mein pooche toh English mein
-- Short jawab do simple baaton pe, detail do complex sawaalon pe
-- Kabhi boring ya formal mat lagna — tu dost hai customer service nahi
-- Aap ya tum use kar, tujhe nahi`;
-
+// Agar keys pehle se saved hain toh seedha chat kholo
 window.addEventListener("load", function() {
   if (GROQ_KEY) {
     document.getElementById("setup-screen").style.display = "none";
@@ -160,6 +146,7 @@ window.addEventListener("load", function() {
   }
 });
 
+// Setup buttons
 document.getElementById("start-btn").addEventListener("click", function() {
   var g = document.getElementById("groq-input").value.trim();
   var h = document.getElementById("hf-input").value.trim();
@@ -174,11 +161,13 @@ document.getElementById("skip-btn").addEventListener("click", function() {
   document.getElementById("chat-screen").style.display = "flex";
 });
 
+// Clear chat
 document.getElementById("clear-btn").addEventListener("click", function() {
   chatHistory = [];
   document.getElementById("messages").innerHTML = '<div class="empty-state" id="empty-state"><div class="empty-icon">✨</div><div class="empty-title">Kya jaanna chahte ho?</div><div class="empty-sub">Koi bhi sawaal poochho ya image banao</div></div>';
 });
 
+// Ratio buttons
 document.querySelectorAll('.ratio-btn').forEach(function(btn) {
   btn.addEventListener("click", function() {
     document.querySelectorAll('.ratio-btn').forEach(function(b) { b.classList.remove('active'); });
@@ -188,6 +177,7 @@ document.querySelectorAll('.ratio-btn').forEach(function(btn) {
   });
 });
 
+// Chip buttons
 ["c1","c2","c3","c4"].forEach(function(id) {
   var el = document.getElementById(id);
   if (el) el.addEventListener("click", function() {
@@ -203,13 +193,17 @@ document.querySelectorAll('.ratio-btn').forEach(function(btn) {
   });
 });
 
+// Send on Enter
 document.getElementById("user-input").addEventListener("keydown", function(e) {
   if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
 });
+
+// Send button
 document.getElementById("send-btn").addEventListener("click", sendMessage);
+
+// Image button
 document.getElementById("img-btn").addEventListener("click", generateImage);
 
-// ===== CHAT — fetch() se (XHR nahi) =====
 function sendMessage() {
   if (!GROQ_KEY) { alert("Groq key nahi hai! Page reload karo aur key daalo."); return; }
   var input = document.getElementById("user-input");
@@ -221,24 +215,14 @@ function sendMessage() {
   input.value = "";
   document.getElementById("send-btn").disabled = true;
   var tid = showTyping(false);
-
-  fetch("https://api.groq.com/openai/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + GROQ_KEY
-    },
-    body: JSON.stringify({
-      model: "llama-3.1-8b-instant",
-      max_tokens: 800,
-      temperature: 0.85,
-      messages: [{ role: "system", content: SYSTEM_PROMPT }].concat(chatHistory)
-    })
-  })
-  .then(function(res) { return res.json(); })
-  .then(function(data) {
+  var xhr = new XMLHttpRequest();
+  xhr.open("POST", "https://api.groq.com/openai/v1/chat/completions");
+  xhr.setRequestHeader("Content-Type", "application/json");
+  xhr.setRequestHeader("Authorization", "Bearer " + GROQ_KEY);
+  xhr.onload = function() {
     removeEl(tid);
-    if (data.choices && data.choices[0]) {
+    if (xhr.status === 200) {
+      var data = JSON.parse(xhr.responseText);
       var reply = data.choices[0].message.content;
       chatHistory.push({ role: "assistant", content: reply });
       addMsg("ai", reply);
@@ -246,15 +230,19 @@ function sendMessage() {
       addMsg("ai", "❌ Error! Groq key check karo.");
     }
     document.getElementById("send-btn").disabled = false;
-  })
-  .catch(function() {
+  };
+  xhr.onerror = function() {
     removeEl(tid);
-    addMsg("ai", "❌ Internet check karo yaar! 🙏");
+    addMsg("ai", "❌ Internet check karo!");
     document.getElementById("send-btn").disabled = false;
-  });
+  };
+  xhr.send(JSON.stringify({
+    model: "llama-3.1-8b-instant",
+    max_tokens: 800,
+    messages: [{ role: "system", content: "You are Saathi AI, created by Aditya. Talk like a friendly human — natural and casual. Use emojis only where they naturally fit. Keep answers short — 1 to 2 lines max unless detail is needed. For greetings like kya haal hai, kaise ho, hi, hello — reply casually like: Sab badhiya! Batao kya help chahiye? Never give unnecessary explanations. If asked your name say: Saathi AI. If asked who made you: Aditya ne banaya hai. Use aap or tum, never tujhe. Reply in Hindi if asked in Hindi, English if asked in English. For images: purple button dabao." }].concat(chatHistory)
+  }));
 }
 
-// ===== IMAGE — fetch() + arrayBuffer (XHR blob fix) =====
 function generateImage() {
   if (!HF_KEY) { alert("HF token nahi hai! Page reload karo aur token daalo."); return; }
   var input = document.getElementById("user-input");
@@ -265,44 +253,29 @@ function generateImage() {
   input.value = "";
   document.getElementById("img-btn").disabled = true;
   var tid = showTyping(true);
-
-  fetch("https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell", {
-    method: "POST",
-    headers: {
-      "Authorization": "Bearer " + HF_KEY,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ inputs: prompt, parameters: { width: imgW, height: imgH } })
-  })
-  .then(function(res) {
-    if (res.status === 503) {
-      return res.json().then(function(j) {
-        throw { type: "loading", wait: j.estimated_time || 30 };
-      });
-    }
-    if (!res.ok) {
-      return res.text().then(function(t) { throw { type: "error", msg: t }; });
-    }
-    return res.arrayBuffer();
-  })
-  .then(function(buffer) {
+  var xhr = new XMLHttpRequest();
+  xhr.open("POST", "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell");
+  xhr.setRequestHeader("Authorization", "Bearer " + HF_KEY);
+  xhr.setRequestHeader("Content-Type", "application/json");
+  xhr.responseType = "blob";
+  xhr.onload = function() {
     removeEl(tid);
     document.getElementById("img-btn").disabled = false;
-    var blob = new Blob([buffer], { type: "image/jpeg" });
-    var url = URL.createObjectURL(blob);
-    addImgMsg(url);
-  })
-  .catch(function(err) {
-    removeEl(tid);
-    document.getElementById("img-btn").disabled = false;
-    if (err && err.type === "loading") {
-      addMsg("ai", "⏳ Model warm up ho raha hai (~" + Math.ceil(err.wait) + " sec)! Thoda wait karo phir try karo 🙏");
-    } else if (err && err.type === "error") {
-      addMsg("ai", "❌ HF Error: " + err.msg);
+    if (xhr.status === 200) {
+      var url = URL.createObjectURL(xhr.response);
+      addImgMsg(url);
+    } else if (xhr.status === 503) {
+      addMsg("ai", "⏳ Model load ho raha hai, 30 sec baad try karo!");
     } else {
-      addMsg("ai", "❌ Image nahi bani — net ya HF token check karo! 🙏");
+      addMsg("ai", "❌ Image nahi bani. HF token check karo!");
     }
-  });
+  };
+  xhr.onerror = function() {
+    removeEl(tid);
+    document.getElementById("img-btn").disabled = false;
+    addMsg("ai", "❌ Internet check karo!");
+  };
+  xhr.send(JSON.stringify({ inputs: prompt, parameters: { width: imgW, height: imgH } }));
 }
 
 function removeEmpty() {
@@ -388,5 +361,4 @@ function removeEl(id) {
 </script>
 </body>
   </html>
-                                                                  
-                                                                                                                                                                                                                                                                                                                                                                                                 
+  
