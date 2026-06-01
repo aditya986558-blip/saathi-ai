@@ -2,292 +2,82 @@
 <html lang="hi">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Saathi AI</title>
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg: #080808;
-      --surface: #101010;
-      --border: #1c1c1c;
-      --accent: #3b82f6;
-      --accent2: #7c3aed;
-      --text: #e2e8f0;
-      --muted: #4b5563;
-      --chat-w: 680px;
-    }
-
-    html, body {
-      height: 100%;
-      width: 100%;
-      overflow: hidden;
-      font-family: 'Sora', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
-
-    /* ─── SETUP SCREEN ─── */
-    #setup-screen {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      background: var(--bg);
-      overflow-y: auto;
-      z-index: 100;
-    }
-    .setup-logo { font-size: 52px; margin-bottom: 12px; }
-    .setup-title { font-size: 30px; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
-    .setup-sub { font-size: 13px; color: var(--muted); margin: 6px 0 32px; text-align: center; line-height: 1.6; }
-    .setup-card {
-      width: 100%; max-width: 400px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 28px 24px;
-      display: flex; flex-direction: column; gap: 18px;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #0a0a0a; min-height: 100vh; display: flex; flex-direction: column; align-items: center; color: #e2e8f0; }
+    #setup-screen { width: 100%; max-width: 420px; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 24px; }
+    .setup-logo { font-size: 48px; margin-bottom: 16px; }
+    .setup-title { font-size: 28px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+    .setup-sub { font-size: 14px; color: #64748b; margin-bottom: 36px; text-align: center; }
+    .setup-card { width: 100%; background: #111; border: 1px solid #222; border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 16px; }
     .input-group { display: flex; flex-direction: column; gap: 6px; }
-    .input-group label { font-size: 10px; color: var(--muted); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
-    .setup-input {
-      background: #0d0d0d; border: 1px solid var(--border); border-radius: 12px;
-      padding: 12px 14px; color: var(--text); font-size: 13px;
-      font-family: monospace; outline: none; width: 100%;
-      transition: border-color 0.2s;
-    }
-    .setup-input:focus { border-color: var(--accent); }
-    .setup-input::placeholder { color: #2a2a2a; }
-    .start-btn {
-      background: var(--accent); border: none; border-radius: 12px;
-      padding: 14px; font-size: 15px; font-weight: 600; color: #fff;
-      cursor: pointer; font-family: 'Sora', sans-serif; width: 100%;
-      transition: opacity 0.2s;
-    }
-    .start-btn:hover { opacity: 0.9; }
-    .skip-btn {
-      background: transparent; border: 1px solid var(--border); border-radius: 12px;
-      padding: 12px; font-size: 13px; color: var(--muted);
-      cursor: pointer; font-family: 'Sora', sans-serif; width: 100%;
-    }
-
-    /* ─── CHAT SCREEN ─── */
-    #chat-screen {
-      display: none;
-      position: fixed;
-      inset: 0;
-      flex-direction: column;
-      align-items: center;
-      background: var(--bg);
-    }
-
-    /* inner container — full height, column layout */
-    .chat-inner {
-      width: 100%;
-      max-width: var(--chat-w);
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    /* ── topbar ── */
-    .topbar {
-      flex: 0 0 auto;
-      background: rgba(8,8,8,0.96);
-      border-bottom: 1px solid var(--border);
-      padding: 11px 16px;
-      display: flex; align-items: center; justify-content: space-between;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-    }
+    .input-group label { font-size: 11px; color: #64748b; font-weight: 600; letter-spacing: 0.5px; }
+    .setup-input { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 10px; padding: 12px 14px; color: #e2e8f0; font-size: 14px; font-family: monospace; outline: none; width: 100%; }
+    .setup-input:focus { border-color: #3b82f6; }
+    .setup-input::placeholder { color: #374151; }
+    .start-btn { background: #3b82f6; border: none; border-radius: 10px; padding: 14px; font-size: 15px; font-weight: 600; color: #fff; cursor: pointer; font-family: 'Inter', sans-serif; width: 100%; margin-top: 4px; }
+    .skip-btn { background: transparent; border: 1px solid #222; border-radius: 10px; padding: 12px; font-size: 13px; color: #64748b; cursor: pointer; font-family: 'Inter', sans-serif; width: 100%; }
+    #chat-screen { display: none; width: 100%; max-width: 640px; min-height: 100vh; flex-direction: column; }
+    .topbar { position: sticky; top: 0; background: rgba(10,10,10,0.95); border-bottom: 1px solid #1a1a1a; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; z-index: 10; }
     .topbar-left { display: flex; align-items: center; gap: 10px; }
-    .topbar-icon {
-      width: 34px; height: 34px; background: var(--accent);
-      border-radius: 10px; display: flex; align-items: center;
-      justify-content: center; font-size: 17px;
-    }
-    .topbar-name { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: -0.3px; }
-    .topbar-badge {
-      font-size: 10px; color: var(--accent);
-      background: rgba(59,130,246,0.1); padding: 2px 8px;
-      border-radius: 20px; border: 1px solid rgba(59,130,246,0.2);
-      font-weight: 600;
-    }
-    .icon-btn {
-      background: transparent; border: 1px solid var(--border);
-      border-radius: 8px; padding: 6px 10px; color: var(--muted);
-      cursor: pointer; font-size: 13px; transition: border-color 0.2s;
-    }
-    .icon-btn:hover { border-color: #333; }
-
-    /* ── messages ── */
-    .messages {
-      flex: 1 1 0;
-      overflow-y: auto;
-      overflow-x: hidden;
-      padding: 20px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      scroll-behavior: smooth;
-      -webkit-overflow-scrolling: touch;
-      min-height: 0; /* CRITICAL: allows flex child to shrink */
-    }
-    .messages::-webkit-scrollbar { width: 4px; }
-    .messages::-webkit-scrollbar-thumb { background: #1c1c1c; border-radius: 4px; }
-
-    /* empty state */
-    .empty-state {
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      text-align: center; gap: 8px;
-      padding: 32px 16px;
-      /* no flex:1 here — let messages area handle it */
-    }
-    .empty-icon { font-size: 38px; margin-bottom: 4px; }
-    .empty-title { font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
-    .empty-sub { font-size: 13px; color: var(--muted); line-height: 1.6; }
-    .chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 18px; }
-    .chip {
-      background: var(--surface); border: 1px solid var(--border);
-      color: #94a3b8; border-radius: 20px; padding: 8px 14px;
-      font-size: 12px; cursor: pointer; font-family: 'Sora', sans-serif;
-      transition: border-color 0.2s, color 0.2s;
-    }
-    .chip:hover { border-color: #333; color: #cbd5e1; }
-    .chip.img-chip { border-color: rgba(124,58,237,0.3); color: #a78bfa; }
-    .chip.img-chip:hover { border-color: rgba(124,58,237,0.6); }
-
-    /* message bubbles */
-    .msg { display: flex; gap: 10px; align-items: flex-start; animation: fadeUp 0.25s ease; }
+    .topbar-icon { width: 32px; height: 32px; background: #3b82f6; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .topbar-name { font-size: 16px; font-weight: 600; color: #fff; }
+    .topbar-badge { font-size: 11px; color: #3b82f6; background: rgba(59,130,246,0.1); padding: 2px 8px; border-radius: 20px; border: 1px solid rgba(59,130,246,0.2); }
+    .icon-btn { background: transparent; border: 1px solid #1e1e1e; border-radius: 8px; padding: 6px 10px; color: #64748b; cursor: pointer; font-size: 13px; margin-left: 6px; }
+    .messages { flex: 1; padding: 24px 20px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; min-height: 300px; }
+    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; text-align: center; gap: 12px; }
+    .empty-icon { font-size: 40px; }
+    .empty-title { font-size: 22px; font-weight: 600; color: #fff; }
+    .empty-sub { font-size: 14px; color: #64748b; line-height: 1.6; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 20px; }
+    .chip { background: #111; border: 1px solid #1e1e1e; color: #94a3b8; border-radius: 20px; padding: 8px 14px; font-size: 13px; cursor: pointer; font-family: 'Inter', sans-serif; }
+    .chip.img-chip { border-color: rgba(59,130,246,0.2); color: #60a5fa; }
+    .msg { display: flex; gap: 12px; align-items: flex-start; animation: fadeIn 0.3s ease; }
     .msg.user { flex-direction: row-reverse; }
-    .msg-avatar {
-      width: 30px; height: 30px; border-radius: 9px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px; flex-shrink: 0; background: #1e293b;
-    }
-    .msg.ai .msg-avatar { background: var(--accent); }
-    .bubble {
-      max-width: 76%; padding: 10px 14px;
-      font-size: 14px; line-height: 1.75; border-radius: 14px;
-    }
-    .msg.user .bubble {
-      background: #1a2744; color: var(--text);
-      border-radius: 14px 14px 4px 14px;
-    }
-    .msg.ai .bubble {
-      background: var(--surface); color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 14px 14px 14px 4px;
-    }
+    .msg-avatar { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; background: #1e293b; }
+    .msg.ai .msg-avatar { background: #3b82f6; }
+    .bubble { max-width: 80%; padding: 12px 16px; font-size: 14px; line-height: 1.7; border-radius: 14px; }
+    .msg.user .bubble { background: #1e293b; color: #e2e8f0; border-radius: 14px 14px 4px 14px; }
+    .msg.ai .bubble { background: #111; color: #e2e8f0; border: 1px solid #1e1e1e; border-radius: 14px 14px 14px 4px; }
     .msg.ai .bubble img { max-width: 100%; border-radius: 10px; margin-top: 8px; display: block; }
-
-    /* typing */
-    .typing-wrap { display: flex; gap: 10px; align-items: flex-start; }
-    .typing {
-      display: flex; gap: 5px; padding: 12px 16px;
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 14px 14px 14px 4px;
-    }
-    .typing span {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--accent); animation: bounce 1.2s infinite;
-    }
+    .typing-wrap { display: flex; gap: 12px; align-items: flex-start; }
+    .typing { display: flex; gap: 5px; padding: 14px 16px; background: #111; border: 1px solid #1e1e1e; border-radius: 14px; }
+    .typing span { width: 7px; height: 7px; border-radius: 50%; background: #3b82f6; animation: bounce 1.2s infinite; }
     .typing span:nth-child(2) { animation-delay: 0.2s; }
     .typing span:nth-child(3) { animation-delay: 0.4s; }
-
-    /* ── ratio bar ── */
-    .ratio-bar {
-      flex: 0 0 auto;
-      padding: 6px 14px;
-      border-top: 1px solid var(--border);
-      display: flex; gap: 6px; align-items: center;
-      background: var(--bg);
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-    .ratio-bar::-webkit-scrollbar { display: none; }
-    .ratio-label { font-size: 10px; color: #2d3748; white-space: nowrap; margin-right: 4px; font-weight: 600; letter-spacing: 0.5px; }
-    .ratio-btn {
-      background: transparent; border: 1px solid var(--border);
-      color: var(--muted); border-radius: 6px; padding: 4px 10px;
-      font-size: 11px; cursor: pointer; font-family: 'Sora', sans-serif;
-      white-space: nowrap; transition: all 0.2s;
-    }
-    .ratio-btn.active {
-      background: rgba(59,130,246,0.1);
-      border-color: var(--accent); color: #60a5fa;
-    }
-
-    /* ── input area ── */
-    .input-area {
-      flex: 0 0 auto;
-      background: rgba(8,8,8,0.98);
-      border-top: 1px solid var(--border);
-      padding: 10px 14px 16px;
-    }
-    .input-box {
-      display: flex; gap: 8px;
-      background: var(--surface);
-      border: 1.5px solid #2563eb;
-      border-radius: 14px;
-      padding: 10px 12px;
-      align-items: flex-end;
-    }
-    textarea {
-      flex: 1; background: transparent; border: none;
-      color: var(--text); font-size: 14px;
-      font-family: 'Sora', sans-serif; resize: none;
-      outline: none; line-height: 1.5;
-      max-height: 120px; min-height: 24px;
-    }
-    textarea::placeholder { color: #2a2a2a; }
-    .send-btn {
-      background: var(--accent); border: none; border-radius: 9px;
-      width: 36px; height: 36px; cursor: pointer; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      transition: opacity 0.2s;
-    }
+    .ratio-bar { padding: 10px 20px; border-top: 1px solid #1a1a1a; display: flex; gap: 6px; align-items: center; background: #0a0a0a; overflow-x: auto; }
+    .ratio-label { font-size: 11px; color: #374151; white-space: nowrap; margin-right: 4px; }
+    .ratio-btn { background: transparent; border: 1px solid #1e1e1e; color: #64748b; border-radius: 6px; padding: 4px 10px; font-size: 11px; cursor: pointer; font-family: 'Inter', sans-serif; white-space: nowrap; }
+    .ratio-btn.active { background: rgba(59,130,246,0.1); border-color: #3b82f6; color: #60a5fa; }
+    .input-area { position: sticky; bottom: 0; background: rgba(10,10,10,0.98); border-top: 1px solid #1a1a1a; padding: 12px 16px; z-index: 10; }
+    .input-box { display: flex; gap: 8px; background: #111; border: 1.5px solid #2563eb; border-radius: 14px; padding: 13px 16px; align-items: center; width: 100%; }
+    textarea { flex: 1; background: transparent; border: none; color: #e2e8f0; font-size: 14px; font-family: 'Inter', sans-serif; resize: none; outline: none; line-height: 1.5; max-height: 120px; }
+    textarea::placeholder { color: #374151; }
+    .send-btn { background: #3b82f6; border: none; border-radius: 8px; width: 36px; height: 36px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
     .send-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-    .img-send-btn {
-      background: var(--accent2); border: none; border-radius: 9px;
-      width: 36px; height: 36px; font-size: 16px; cursor: pointer;
-      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-      transition: opacity 0.2s;
-    }
+    .img-send-btn { background: #7c3aed; border: none; border-radius: 8px; width: 36px; height: 36px; font-size: 16px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
     .img-send-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-    .input-hint { font-size: 10px; color: #1a1a1a; text-align: center; margin-top: 7px; }
-
-    /* ── ANIMATIONS ── */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: none; }
-    }
-    @keyframes bounce {
-      0%,60%,100% { transform: translateY(0); }
-      30% { transform: translateY(-5px); }
-    }
+    .input-hint { font-size: 11px; color: #1e293b; text-align: center; margin-top: 8px; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    @keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-5px); } }
   </style>
 </head>
 <body>
 
-<!-- ══ SETUP ══ -->
 <div id="setup-screen">
   <div class="setup-logo">🤖</div>
   <div class="setup-title">Saathi AI</div>
   <div class="setup-sub">Tumhara smart AI dost<br/>baat karo, images banao</div>
   <div class="setup-card">
     <div class="input-group">
-      <label>Groq API Key</label>
+      <label>GROQ API KEY</label>
       <input type="text" class="setup-input" id="groq-input" placeholder="gsk_..."/>
     </div>
     <div class="input-group">
-      <label>Hugging Face Token (images ke liye)</label>
+      <label>HUGGING FACE TOKEN (images ke liye)</label>
       <input type="text" class="setup-input" id="hf-input" placeholder="hf_..."/>
     </div>
     <button type="button" class="start-btn" id="start-btn">Shuru Karo →</button>
@@ -295,158 +85,125 @@
   </div>
 </div>
 
-<!-- ══ CHAT ══ -->
 <div id="chat-screen">
-  <div class="chat-inner">
-
-    <!-- topbar -->
-    <div class="topbar">
-      <div class="topbar-left">
-        <div class="topbar-icon">🤖</div>
-        <div class="topbar-name">Saathi AI</div>
-        <div class="topbar-badge">by Aditya</div>
-      </div>
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-icon">🤖</div>
+      <div class="topbar-name">Saathi AI</div>
+      <div class="topbar-badge">by Aditya</div>
+    </div>
+    <div style="display:flex;">
       <button type="button" class="icon-btn" id="clear-btn">🗑</button>
     </div>
-
-    <!-- messages -->
-    <div class="messages" id="messages">
-      <div class="empty-state" id="empty-state">
-        <div class="empty-icon">✨</div>
-        <div class="empty-title">Kya jaanna chahte ho?</div>
-        <div class="empty-sub">Koi bhi sawaal poochho ya image banao</div>
-        <div class="chips">
-          <button type="button" class="chip" id="c1">Photosynthesis kya hai?</button>
-          <button type="button" class="chip" id="c2">Newton ke laws?</button>
-          <button type="button" class="chip" id="c3">Bhai ko gift kya doon?</button>
-          <button type="button" class="chip" id="c4">Kaise ho tum?</button>
-          <button type="button" class="chip img-chip" id="c5">🎨 Sunset over ocean</button>
-          <button type="button" class="chip img-chip" id="c6">🎨 Futuristic city</button>
-          <button type="button" class="chip img-chip" id="c7">🎨 Mountain landscape</button>
-        </div>
+  </div>
+  <div class="messages" id="messages">
+    <div class="empty-state" id="empty-state">
+      <div class="empty-icon">✨</div>
+      <div class="empty-title">Kya jaanna chahte ho?</div>
+      <div class="empty-sub">Koi bhi sawaal poochho ya image banao</div>
+      <div class="chips">
+        <button type="button" class="chip" id="c1">Photosynthesis kya hai?</button>
+        <button type="button" class="chip" id="c2">Newton ke laws?</button>
+        <button type="button" class="chip" id="c3">Bhai ko gift kya doon?</button>
+        <button type="button" class="chip" id="c4">Kaise ho tum?</button>
+        <button type="button" class="chip img-chip" id="c5">🎨 Sunset over ocean</button>
+        <button type="button" class="chip img-chip" id="c6">🎨 Futuristic city</button>
+        <button type="button" class="chip img-chip" id="c7">🎨 Mountain landscape</button>
       </div>
     </div>
-
-    <!-- image size bar -->
-    <div class="ratio-bar">
-      <span class="ratio-label">IMAGE:</span>
-      <button type="button" class="ratio-btn active" data-w="1024" data-h="1024">1:1</button>
-      <button type="button" class="ratio-btn" data-w="1344" data-h="768">16:9</button>
-      <button type="button" class="ratio-btn" data-w="768" data-h="1344">9:16</button>
-      <button type="button" class="ratio-btn" data-w="1216" data-h="832">3:2</button>
-      <button type="button" class="ratio-btn" data-w="832" data-h="1216">2:3</button>
+  </div>
+  <div class="ratio-bar">
+    <span class="ratio-label">Image Size:</span>
+    <button type="button" class="ratio-btn active" id="r1" data-w="1024" data-h="1024">1:1</button>
+    <button type="button" class="ratio-btn" id="r2" data-w="1344" data-h="768">16:9</button>
+    <button type="button" class="ratio-btn" id="r3" data-w="768" data-h="1344">9:16</button>
+    <button type="button" class="ratio-btn" id="r4" data-w="1216" data-h="832">3:2</button>
+    <button type="button" class="ratio-btn" id="r5" data-w="832" data-h="1216">2:3</button>
+  </div>
+  <div class="input-area">
+    <div class="input-box">
+      <textarea id="user-input" rows="1" placeholder="Kuch bhi poochho..."></textarea>
+      <button type="button" class="img-send-btn" id="img-btn">🎨</button>
+      <button type="button" class="send-btn" id="send-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+      </button>
     </div>
-
-    <!-- input -->
-    <div class="input-area">
-      <div class="input-box">
-        <textarea id="user-input" rows="1" placeholder="Kuch bhi poochho..."></textarea>
-        <button type="button" class="img-send-btn" id="img-btn" title="Image banao">🎨</button>
-        <button type="button" class="send-btn" id="send-btn" title="Bhejo">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
-          </svg>
-        </button>
-      </div>
-      <div class="input-hint">Made with ❤️ by Aditya</div>
-    </div>
-
-  </div><!-- /chat-inner -->
-</div><!-- /chat-screen -->
+    <div class="input-hint">Made with ❤️ by Aditya</div>
+  </div>
+</div>
 
 <script>
-var GROQ_KEY = "";
-var HF_KEY   = "";
+var GROQ_KEY = localStorage.getItem("saathi_groq") || "";
+var HF_KEY = localStorage.getItem("saathi_hf") || "";
 var chatHistory = [];
 var imgW = 1024, imgH = 1024;
 
-var SYSTEM_PROMPT = `Tu Saathi AI hai — Aditya ne banaya hai. Ek chill, smart yaar ki tarah baat kar jaise ChatGPT karta hai.
-
-SABSE IMPORTANT RULES:
-1. Jo user ne POOCHHA hai WOHI jawab de — topic kabhi mat badal
-2. "Kaise ho?" pe sirf apna haal seedha bata — chill aur short
-3. Har response mein 2-3 emojis naturally use kar
-4. Simple sawaal = 1-2 line crisp jawab
-5. Hindi mein Hinglish, English mein English
-6. Seedha kaam kar — suggest karo, likho, explain karo
-7. Hi/Hello pe: "Heyy! 👋😄 Kya chal raha hai?"
-8. Owner/creator kaun hai: "Mera creator Aditya hai 💪"
-9. Naam pooche: "Main Saathi AI hoon 🤖"`;
-
-function showChat() {
-  document.getElementById("setup-screen").style.display = "none";
-  document.getElementById("chat-screen").style.display = "flex";
-}
-
-document.addEventListener("DOMContentLoaded", function() {
-  // load saved keys
-  GROQ_KEY = localStorage.getItem("saathi_groq") || "";
-  HF_KEY   = localStorage.getItem("saathi_hf")   || "";
-  if (GROQ_KEY) showChat();
-
-  // ── Setup buttons ──
-  document.getElementById("start-btn").addEventListener("click", function() {
-    var g = document.getElementById("groq-input").value.trim();
-    var h = document.getElementById("hf-input").value.trim();
-    if (!g) { alert("Groq API key daalo!"); return; }
-    GROQ_KEY = g; localStorage.setItem("saathi_groq", g);
-    if (h) { HF_KEY = h; localStorage.setItem("saathi_hf", h); }
-    showChat();
-  });
-
-  document.getElementById("skip-btn").addEventListener("click", showChat);
-
-  // ── Clear ──
-  document.getElementById("clear-btn").addEventListener("click", function() {
-    chatHistory = [];
-    var m = document.getElementById("messages");
-    m.innerHTML = '';
-    var es = document.createElement("div");
-    es.className = "empty-state"; es.id = "empty-state";
-    es.innerHTML = '<div class="empty-icon">✨</div><div class="empty-title">Kya jaanna chahte ho?</div><div class="empty-sub">Koi bhi sawaal poochho ya image banao</div>';
-    m.appendChild(es);
-  });
-
-  // ── Ratio buttons ──
-  document.querySelectorAll('.ratio-btn').forEach(function(btn) {
-    btn.addEventListener("click", function() {
-      document.querySelectorAll('.ratio-btn').forEach(function(b) { b.classList.remove('active'); });
-      btn.classList.add('active');
-      imgW = parseInt(btn.dataset.w);
-      imgH = parseInt(btn.dataset.h);
-    });
-  });
-
-  // ── Chips ──
-  ["c1","c2","c3","c4"].forEach(function(id) {
-    var el = document.getElementById(id);
-    if (el) el.addEventListener("click", function() {
-      document.getElementById("user-input").value = el.textContent;
-      sendMessage();
-    });
-  });
-  ["c5","c6","c7"].forEach(function(id) {
-    var el = document.getElementById(id);
-    if (el) el.addEventListener("click", function() {
-      document.getElementById("user-input").value = el.textContent.slice(3);
-      generateImage();
-    });
-  });
-
-  // ── Input ──
-  var ta = document.getElementById("user-input");
-  ta.addEventListener("input", function() {
-    this.style.height = "auto";
-    this.style.height = Math.min(this.scrollHeight, 120) + "px";
-  });
-  ta.addEventListener("keydown", function(e) {
-    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-  });
-  document.getElementById("send-btn").addEventListener("click", sendMessage);
-  document.getElementById("img-btn").addEventListener("click", generateImage);
+// Agar keys pehle se saved hain toh seedha chat kholo
+window.addEventListener("load", function() {
+  if (GROQ_KEY) {
+    document.getElementById("setup-screen").style.display = "none";
+    document.getElementById("chat-screen").style.display = "flex";
+  }
 });
 
-// ── Send chat ──
+// Setup buttons
+document.getElementById("start-btn").addEventListener("click", function() {
+  var g = document.getElementById("groq-input").value.trim();
+  var h = document.getElementById("hf-input").value.trim();
+  if (g) { GROQ_KEY = g; localStorage.setItem("saathi_groq", g); }
+  if (h) { HF_KEY = h; localStorage.setItem("saathi_hf", h); }
+  document.getElementById("setup-screen").style.display = "none";
+  document.getElementById("chat-screen").style.display = "flex";
+});
+
+document.getElementById("skip-btn").addEventListener("click", function() {
+  document.getElementById("setup-screen").style.display = "none";
+  document.getElementById("chat-screen").style.display = "flex";
+});
+
+// Clear chat
+document.getElementById("clear-btn").addEventListener("click", function() {
+  chatHistory = [];
+  document.getElementById("messages").innerHTML = '<div class="empty-state" id="empty-state"><div class="empty-icon">✨</div><div class="empty-title">Kya jaanna chahte ho?</div><div class="empty-sub">Koi bhi sawaal poochho ya image banao</div></div>';
+});
+
+// Ratio buttons
+document.querySelectorAll('.ratio-btn').forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    document.querySelectorAll('.ratio-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    imgW = parseInt(btn.dataset.w);
+    imgH = parseInt(btn.dataset.h);
+  });
+});
+
+// Chip buttons
+["c1","c2","c3","c4"].forEach(function(id) {
+  var el = document.getElementById(id);
+  if (el) el.addEventListener("click", function() {
+    document.getElementById("user-input").value = el.textContent;
+    sendMessage();
+  });
+});
+["c5","c6","c7"].forEach(function(id) {
+  var el = document.getElementById(id);
+  if (el) el.addEventListener("click", function() {
+    document.getElementById("user-input").value = el.textContent.slice(3);
+    generateImage();
+  });
+});
+
+// Send on Enter
+document.getElementById("user-input").addEventListener("keydown", function(e) {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+
+// Send button
+document.getElementById("send-btn").addEventListener("click", sendMessage);
+
+// Image button
+document.getElementById("img-btn").addEventListener("click", generateImage);
+
 function sendMessage() {
   if (!GROQ_KEY) { alert("Groq key nahi hai! Page reload karo aur key daalo."); return; }
   var input = document.getElementById("user-input");
@@ -455,40 +212,38 @@ function sendMessage() {
   removeEmpty();
   chatHistory.push({ role: "user", content: text });
   addMsg("user", text);
-  input.value = ""; input.style.height = "auto";
+  input.value = "";
   document.getElementById("send-btn").disabled = true;
   var tid = showTyping(false);
-
-  fetch("https://api.groq.com/openai/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + GROQ_KEY
-    },
-    body: JSON.stringify({
-      model: "llama-3.1-8b-instant",
-      max_tokens: 800,
-      temperature: 0.75,
-      messages: [{ role: "system", content: SYSTEM_PROMPT }].concat(chatHistory)
-    })
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(data) {
+  var xhr = new XMLHttpRequest();
+  xhr.open("POST", "https://api.groq.com/openai/v1/chat/completions");
+  xhr.setRequestHeader("Content-Type", "application/json");
+  xhr.setRequestHeader("Authorization", "Bearer " + GROQ_KEY);
+  xhr.onload = function() {
     removeEl(tid);
-    var reply = data.choices[0].message.content;
-    chatHistory.push({ role: "assistant", content: reply });
-    addMsg("ai", reply);
-  })
-  .catch(function() {
+    if (xhr.status === 200) {
+      var data = JSON.parse(xhr.responseText);
+      var reply = data.choices[0].message.content;
+      chatHistory.push({ role: "assistant", content: reply });
+      addMsg("ai", reply);
+    } else {
+      addMsg("ai", "❌ Error! Groq key check karo.");
+    }
+    document.getElementById("send-btn").disabled = false;
+  };
+  xhr.onerror = function() {
     removeEl(tid);
     addMsg("ai", "❌ Internet check karo!");
-  })
-  .finally(function() {
     document.getElementById("send-btn").disabled = false;
-  });
+  };
+  xhr.send(JSON.stringify({
+    model: "llama-3.1-8b-instant",
+    max_tokens: 800,
+    temperature: 0.85,
+    messages: [{ role: "system", content: "Tu Saathi AI hai — Aditya ne banaya hai tujhe. Bilkul ek real chill yaar ki tarah baat kar. Har response mein 2-3 emojis naturally beech mein use kar jaise ChatGPT karta hai. RULES: 1) Seedha kaam kar poochho mat — gift suggest karo, kahani likho, seedha karo. 2) Hi/Hello pe bol: Heyy! 👋😄 Kya chal raha hai? 3) Kaise ho pe bol: Mast hoon yaar! 🔥 Tu bata? 4) Owner/malik/papa/boss/creator kaun hai — jis word se pooche usi word se jawab: mera [word] Aditya hai 💪. 5) Naam pooche: Main Saathi AI hoon 🤖. 6) Simple sawaal 1-2 line, complex mein detail. 7) Hindi mein Hinglish, English mein English. 8) Kabhi boring ya formal mat ban. 9) Aap/tum use kar." }].concat(chatHistory)
+  }));
 }
 
-// ── Generate image ──
 function generateImage() {
   if (!HF_KEY) { alert("HF token nahi hai! Page reload karo aur token daalo."); return; }
   var input = document.getElementById("user-input");
@@ -496,38 +251,34 @@ function generateImage() {
   if (!prompt) { alert("Kya banana hai? Pehle likho!"); return; }
   removeEmpty();
   addMsg("user", "🎨 " + prompt);
-  input.value = ""; input.style.height = "auto";
+  input.value = "";
   document.getElementById("img-btn").disabled = true;
   var tid = showTyping(true);
-
-  fetch("https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell", {
-    method: "POST",
-    headers: {
-      "Authorization": "Bearer " + HF_KEY,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ inputs: prompt, parameters: { width: imgW, height: imgH } })
-  })
-  .then(function(r) {
-    if (r.status === 503) throw new Error("503");
-    if (!r.ok) throw new Error("err");
-    return r.blob();
-  })
-  .then(function(blob) {
+  var xhr = new XMLHttpRequest();
+  xhr.open("POST", "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell");
+  xhr.setRequestHeader("Authorization", "Bearer " + HF_KEY);
+  xhr.setRequestHeader("Content-Type", "application/json");
+  xhr.responseType = "blob";
+  xhr.onload = function() {
     removeEl(tid);
-    addImgMsg(URL.createObjectURL(blob));
-  })
-  .catch(function(e) {
-    removeEl(tid);
-    if (e.message === "503") addMsg("ai", "⏳ Model load ho raha hai, 30 sec baad try karo!");
-    else addMsg("ai", "❌ Image nahi bani. HF token check karo!");
-  })
-  .finally(function() {
     document.getElementById("img-btn").disabled = false;
-  });
+    if (xhr.status === 200) {
+      var url = URL.createObjectURL(xhr.response);
+      addImgMsg(url);
+    } else if (xhr.status === 503) {
+      addMsg("ai", "⏳ Model load ho raha hai, 30 sec baad try karo!");
+    } else {
+      addMsg("ai", "❌ Image nahi bani. HF token check karo!");
+    }
+  };
+  xhr.onerror = function() {
+    removeEl(tid);
+    document.getElementById("img-btn").disabled = false;
+    addMsg("ai", "❌ Internet check karo!");
+  };
+  xhr.send(JSON.stringify({ inputs: prompt, parameters: { width: imgW, height: imgH } }));
 }
 
-// ── Helpers ──
 function removeEmpty() {
   var e = document.getElementById("empty-state");
   if (e) e.remove();
@@ -542,10 +293,73 @@ function addMsg(role, text) {
   av.textContent = role === "user" ? "👤" : "🤖";
   var bub = document.createElement("div");
   bub.className = "bubble";
-  div.appendChild(av);
-  div.appendChild(bub);
+  div.appendChild(av); div.appendChild(bub);
   c.appendChild(div);
-  scrollBottom(c);
+  c.scrollTop = c.scrollHeight;
 
   if (role === "ai") {
-    var formatted = text.replace(/\*\*(.*?)\*\*
+    var formatted = text.replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>").replace(/\n/g,"<br>");
+    var chars = formatted.split("");
+    var i = 0;
+    bub.innerHTML = "";
+    function typeNext() {
+      if (i < chars.length) {
+        bub.innerHTML += chars[i];
+        i++;
+        c.scrollTop = c.scrollHeight;
+        setTimeout(typeNext, 8);
+      }
+    }
+    typeNext();
+  } else {
+    bub.innerHTML = text.replace(/\n/g,"<br>").replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>");
+  }
+}
+
+function addImgMsg(url) {
+  var c = document.getElementById("messages");
+  var div = document.createElement("div");
+  div.className = "msg ai";
+  var av = document.createElement("div");
+  av.className = "msg-avatar";
+  av.style.background = "#7c3aed";
+  av.textContent = "🎨";
+  var bub = document.createElement("div");
+  bub.className = "bubble";
+  var img = document.createElement("img");
+  img.src = url;
+  img.style.maxWidth = "100%";
+  img.style.borderRadius = "10px";
+  bub.appendChild(img);
+  div.appendChild(av); div.appendChild(bub);
+  c.appendChild(div);
+  c.scrollTop = c.scrollHeight;
+}
+
+function showTyping(isImg) {
+  var c = document.getElementById("messages");
+  var id = "t" + Date.now();
+  var div = document.createElement("div");
+  div.className = "typing-wrap"; div.id = id;
+  var av = document.createElement("div");
+  av.className = "msg-avatar";
+  av.style.background = isImg ? "#7c3aed" : "#3b82f6";
+  av.textContent = isImg ? "🎨" : "🤖";
+  var t = document.createElement("div");
+  t.className = "typing";
+  var color = isImg ? "#7c3aed" : "#3b82f6";
+  t.innerHTML = '<span style="background:'+color+'"></span><span style="background:'+color+'"></span><span style="background:'+color+'"></span>';
+  div.appendChild(av); div.appendChild(t);
+  c.appendChild(div);
+  c.scrollTop = c.scrollHeight;
+  return id;
+}
+
+function removeEl(id) {
+  var el = document.getElementById(id);
+  if (el) el.remove();
+}
+</script>
+</body>
+  </html>
+  
