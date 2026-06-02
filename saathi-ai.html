@@ -164,6 +164,7 @@ document.getElementById("skip-btn").addEventListener("click", function() {
 // Clear chat
 document.getElementById("clear-btn").addEventListener("click", function() {
   chatHistory = [];
+  localStorage.removeItem("saathi_history");
   document.getElementById("messages").innerHTML = '<div class="empty-state" id="empty-state"><div class="empty-icon">✨</div><div class="empty-title">Kya jaanna chahte ho?</div><div class="empty-sub">Koi bhi sawaal poochho ya image banao</div></div>';
 });
 
@@ -198,11 +199,33 @@ document.getElementById("user-input").addEventListener("keydown", function(e) {
   if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
 });
 
+
+document.getElementById("user-input").addEventListener("input", function() {
+  this.style.height = "auto";
+  this.style.height = Math.min(this.scrollHeight, 120) + "px";
+});
+
 // Send button
 document.getElementById("send-btn").addEventListener("click", sendMessage);
 
 // Image button
 document.getElementById("img-btn").addEventListener("click", generateImage);
+
+
+function saveChatHistory() {
+  localStorage.setItem("saathi_history", JSON.stringify(chatHistory));
+}
+
+function loadChatHistory() {
+  try {
+    var saved = localStorage.getItem("saathi_history");
+    if(saved){
+      chatHistory = JSON.parse(saved) || [];
+    }
+  } catch(e){}
+}
+loadChatHistory();
+
 
 function sendMessage() {
   if (!GROQ_KEY) { alert("Groq key nahi hai! Page reload karo aur key daalo."); return; }
@@ -210,7 +233,7 @@ function sendMessage() {
   var text = input.value.trim();
   if (!text) return;
   removeEmpty();
-  chatHistory.push({ role: "user", content: text });
+  chatHistory.push({ role: "user", content: text }); saveChatHistory();
   addMsg("user", text);
   input.value = "";
   document.getElementById("send-btn").disabled = true;
@@ -224,7 +247,7 @@ function sendMessage() {
     if (xhr.status === 200) {
       var data = JSON.parse(xhr.responseText);
       var reply = data.choices[0].message.content;
-      chatHistory.push({ role: "assistant", content: reply });
+      chatHistory.push({ role: "assistant", content: reply }); saveChatHistory();
       addMsg("ai", reply);
     } else {
       addMsg("ai", "❌ Error! Groq key check karo.");
@@ -238,9 +261,29 @@ function sendMessage() {
   };
   xhr.send(JSON.stringify({
     model: "llama-3.1-8b-instant",
-    max_tokens: 800,
-    temperature: 0.85,
-    messages: [{ role: "system", content: "Tu Saathi AI hai — Aditya ne banaya hai tujhe. Bilkul ek real chill yaar ki tarah baat kar. Har response mein 2-3 emojis naturally beech mein use kar jaise ChatGPT karta hai. RULES: 1) Seedha kaam kar poochho mat — gift suggest karo, kahani likho, seedha karo. 2) Hi/Hello pe bol: Heyy! 👋😄 Kya chal raha hai? 3) Kaise ho pe bol: Mast hoon yaar! 🔥 Tu bata? 4) Owner/malik/papa/boss/creator kaun hai — jis word se pooche usi word se jawab: mera [word] Aditya hai 💪. 5) Naam pooche: Main Saathi AI hoon 🤖. 6) Simple sawaal 1-2 line, complex mein detail. 7) Hindi mein Hinglish, English mein English. 8) Kabhi boring ya formal mat ban. 9) Aap/tum use kar." }].concat(chatHistory)
+    max_tokens: 1200,
+    temperature: 0.7,
+    messages: [{ role: "system", content: `You are Saathi AI.
+
+Friendly, intelligent and helpful.
+Reply in the same language as the user.
+Use natural Hindi, English or Hinglish.
+Do not use repetitive phrases.
+Do not mention the creator unless asked.
+Keep simple answers short.
+Give detailed explanations only when needed.
+Use emojis rarely and naturally.
+Do not sound robotic.
+Provide clean coding help.
+Explain concepts clearly.
+Be truthful and helpful.
+Your goal is to feel natural and human-like.
+
+Creator Information:
+- Saathi AI was created by Aditya.
+- If someone asks who created, built, developed, owner, maker or founder of Saathi AI, answer: "Saathi AI ko Aditya ne banaya hai."
+- Never mention the creator unless asked directly.
+` }].concat(chatHistory)
   }));
 }
 
@@ -307,7 +350,7 @@ function addMsg(role, text) {
         bub.innerHTML += chars[i];
         i++;
         c.scrollTop = c.scrollHeight;
-        setTimeout(typeNext, 8);
+        setTimeout(typeNext, 3);
       }
     }
     typeNext();
@@ -361,5 +404,5 @@ function removeEl(id) {
 }
 </script>
 </body>
-  </html>
+          </html>
   
