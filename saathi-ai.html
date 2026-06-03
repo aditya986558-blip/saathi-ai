@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="hi">
 <head>
@@ -7,24 +6,23 @@
   <title>Saathi AI — Premium Companion</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet"/>
   <style>
-    /* Premium Design System Variables */
     :root {
-      --bg-main: #09090b;
-      --bg-sidebar: #121214;
-      --bg-card: #18181b;
-      --bg-card-hover: #202024;
-      --border-color: #27272a;
-      --border-focus: #3f3f46;
-      --text-main: #f4f4f5;
+      --bg-main: #0a0a0c;
+      --bg-sidebar: #111115;
+      --bg-card: #16161a;
+      --bg-card-hover: #1e1e24;
+      --border-color: #24242a;
+      --border-focus: #3b82f6;
+      --text-main: #f4f4f7;
       --text-muted: #a1a1aa;
-      --text-dark: #71717a;
+      --text-dark: #52525b;
       
       --accent-primary: #3b82f6;
       --accent-secondary: #8b5cf6;
       --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
       
       --user-bubble: #2563eb;
-      --ai-bubble: #18181b;
+      --ai-bubble: #16161a;
       
       --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       --font-mono: 'Fira Code', monospace;
@@ -38,7 +36,6 @@
       scrollbar-color: var(--border-color) transparent;
     }
 
-    /* Scrollbars */
     ::-webkit-scrollbar {
       width: 6px;
       height: 6px;
@@ -65,11 +62,10 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Screen Transitions */
     .screen {
       display: none;
       opacity: 0;
-      transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       min-height: 100vh;
       width: 100%;
     }
@@ -79,13 +75,13 @@
       opacity: 1;
     }
 
-    /* Setup Screen Layout */
+    /* Setup Screen */
     #setup-screen {
       flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 24px;
-      background: radial-gradient(circle at 50% 30%, rgba(59, 130, 246, 0.08) 0%, transparent 70%), var(--bg-main);
+      background: radial-gradient(circle at 50% 30%, rgba(59, 130, 246, 0.08) 0%, transparent 75%), var(--bg-main);
     }
 
     .setup-container {
@@ -95,12 +91,12 @@
       border: 1px solid var(--border-color);
       border-radius: 24px;
       padding: 36px;
-      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
-      animation: setupEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
+      animation: setupEntrance 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
     @keyframes setupEntrance {
-      from { transform: translateY(20px); opacity: 0; }
+      from { transform: translateY(15px); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
     }
 
@@ -126,7 +122,7 @@
     }
 
     .brand-title {
-      font-size: 32px;
+      font-size: 30px;
       font-weight: 700;
       letter-spacing: -0.5px;
       background: linear-gradient(115deg, #ffffff 30%, var(--text-muted) 100%);
@@ -164,7 +160,7 @@
 
     .input-wrapper input {
       width: 100%;
-      background: rgba(9, 9, 11, 0.6);
+      background: rgba(9, 9, 12, 0.7);
       border: 1px solid var(--border-color);
       border-radius: 12px;
       padding: 14px 16px;
@@ -194,7 +190,7 @@
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.2s ease;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -223,16 +219,15 @@
       color: var(--text-main);
     }
 
-    /* Chat Screen Layout */
+    /* Chat Screen */
     #chat-screen {
       flex-direction: column;
       height: 100vh;
       max-height: 100vh;
     }
 
-    /* Dynamic Header & Navigation Bar */
     .navbar {
-      background: rgba(9, 9, 11, 0.85);
+      background: rgba(10, 10, 12, 0.85);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border-color);
@@ -317,7 +312,7 @@
       border-color: var(--border-focus);
     }
 
-    /* Chat Messages Layout */
+    /* Message List */
     .message-container {
       flex: 1;
       overflow-y: auto;
@@ -330,7 +325,7 @@
       margin: 0 auto;
     }
 
-    /* Empty Prompt Suggestions State */
+    /* Welcoming Empty State */
     .welcome-container {
       display: flex;
       flex-direction: column;
@@ -350,7 +345,7 @@
 
     @keyframes pulse {
       0%, 100% { opacity: 0.8; transform: scale(1); }
-      50% { opacity: 1; transform: scale(1.05); }
+      50% { opacity: 1; transform: scale(1.04); }
     }
 
     .welcome-title {
@@ -420,7 +415,7 @@
       border-color: rgba(139, 92, 246, 0.5);
     }
 
-    /* Individual Chat Bubbles */
+    /* Message Rows */
     .message-row {
       display: flex;
       gap: 16px;
@@ -429,7 +424,7 @@
     }
 
     @keyframes messageEntrance {
-      from { opacity: 0; transform: translateY(12px); }
+      from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
@@ -491,7 +486,6 @@
       border: 1px solid var(--border-color);
     }
 
-    /* Structured Markdown styling inside Bubble */
     .bubble p {
       margin-bottom: 12px;
     }
@@ -509,6 +503,15 @@
       border-radius: 4px;
       font-size: 13px;
     }
+    
+    .code-pre code {
+      background: transparent !important;
+      padding: 0 !important;
+      border-radius: 0 !important;
+      display: block;
+      font-size: 13px;
+    }
+
     .bubble h1, .bubble h2, .bubble h3 {
       color: #ffffff;
       margin-top: 16px;
@@ -527,7 +530,7 @@
       margin-bottom: 4px;
     }
 
-    /* Premium Code Block Layout */
+    /* Premium Code Box */
     .code-container {
       background: #09090b;
       border: 1px solid var(--border-color);
@@ -575,7 +578,7 @@
       color: #e2e8f0;
     }
 
-    /* Creative Image Block Styling */
+    /* Image Display Card */
     .image-card {
       background: var(--bg-card);
       border: 1px solid var(--border-color);
@@ -626,7 +629,7 @@
       border-color: var(--border-focus);
     }
 
-    /* Bouncing Dots Typing Animation */
+    /* Typing Animation */
     .typing-indicator {
       display: flex;
       align-items: center;
@@ -655,7 +658,7 @@
       40% { transform: scale(1.0); }
     }
 
-    /* Size / Aspect Ratio Control Strip */
+    /* Aspect Ratio Control Bar */
     .aspect-strip {
       display: flex;
       align-items: center;
@@ -696,7 +699,7 @@
       color: #60a5fa;
     }
 
-    /* Interactive Bottom Input Control System */
+    /* Bottom Input Bar Layout */
     .input-bar-container {
       background: var(--bg-main);
       padding: 12px 24px 24px 24px;
@@ -807,7 +810,7 @@
       margin-top: 10px;
     }
 
-    /* Modal Styling for Key / Model Settings */
+    /* Modal Overlay System */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -856,7 +859,7 @@
       color: #fff;
     }
 
-    /* Error Message Alert Banner */
+    /* System Warnings */
     .system-banner {
       background: rgba(239, 68, 68, 0.1);
       border: 1px solid rgba(239, 68, 68, 0.2);
@@ -866,9 +869,9 @@
       font-size: 13px;
       margin-bottom: 16px;
       display: none;
+      width: 100%;
     }
 
-    /* Generic Utility Fade-in */
     @keyframes fadeIn {
       from { opacity: 0; }
       to { opacity: 1; }
@@ -877,4 +880,9 @@
 </head>
 <body>
 
-  <!-- Screen 1: Key / Setup Control
+  <!-- Screen 1: Config Panels -->
+  <div id="setup-screen" class="screen active">
+    <div class="setup-container">
+      <div class="brand-header">
+        <div class="logo-container">🤖</div>
+        <h1 class="
