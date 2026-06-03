@@ -1,0 +1,1527 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Saathi AI — Premium Companion</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg-main: #0a0a0c;
+      --bg-sidebar: #111115;
+      --bg-card: #16161a;
+      --bg-card-hover: #1e1e24;
+      --border-color: #24242a;
+      --border-focus: #3b82f6;
+      --text-main: #f4f4f7;
+      --text-muted: #a1a1aa;
+      --text-dark: #52525b;
+      
+      --accent-primary: #3b82f6;
+      --accent-secondary: #8b5cf6;
+      --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      
+      --user-bubble: #2563eb;
+      --ai-bubble: #16161a;
+      
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'Fira Code', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border-color) transparent;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--border-focus);
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .screen {
+      display: none;
+      opacity: 0;
+      transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      min-height: 100vh;
+      width: 100%;
+    }
+    
+    .screen.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    /* Setup Screen */
+    #setup-screen {
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: radial-gradient(circle at 50% 30%, rgba(59, 130, 246, 0.08) 0%, transparent 75%), var(--bg-main);
+    }
+
+    .setup-container {
+      width: 100%;
+      max-width: 440px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 36px;
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
+      animation: setupEntrance 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes setupEntrance {
+      from { transform: translateY(15px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .brand-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .logo-container {
+      width: 64px;
+      height: 64px;
+      background: var(--accent-gradient);
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-bottom: 16px;
+      box-shadow: 0 8px 24px -6px rgba(59, 130, 246, 0.5);
+    }
+
+    .brand-title {
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      background: linear-gradient(115deg, #ffffff 30%, var(--text-muted) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    .brand-sub {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-wrapper input {
+      width: 100%;
+      background: rgba(9, 9, 12, 0.7);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px 16px;
+      color: var(--text-main);
+      font-size: 14px;
+      font-family: var(--font-mono);
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .input-wrapper input:focus {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    .input-wrapper input::placeholder {
+      color: #3f3f46;
+    }
+
+    .action-btn {
+      width: 100%;
+      background: var(--text-main);
+      color: var(--bg-main);
+      border: none;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .action-btn:hover {
+      background: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .action-btn:active {
+      transform: translateY(0);
+    }
+
+    .action-btn.secondary {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      margin-top: 12px;
+    }
+
+    .action-btn.secondary:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-main);
+    }
+
+    /* Chat Screen */
+    #chat-screen {
+      flex-direction: column;
+      height: 100vh;
+      max-height: 100vh;
+    }
+
+    .navbar {
+      background: rgba(10, 10, 12, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-logo {
+      width: 36px;
+      height: 36px;
+      background: var(--accent-gradient);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .nav-meta {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .nav-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+      display: inline-block;
+      box-shadow: 0 0 8px #10b981;
+    }
+
+    .nav-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .icon-button {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      border-radius: 10px;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .icon-button:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-main);
+      border-color: var(--border-focus);
+    }
+
+    /* Message List */
+    .message-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    /* Welcoming Empty State */
+    .welcome-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      margin: auto 0;
+      padding: 40px 20px;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .welcome-icon {
+      font-size: 48px;
+      margin-bottom: 20px;
+      animation: pulse 3s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.8; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.04); }
+    }
+
+    .welcome-title {
+      font-size: 26px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .welcome-sub {
+      font-size: 14px;
+      color: var(--text-muted);
+      max-width: 440px;
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+
+    .suggestions-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    @media (max-width: 550px) {
+      .suggestions-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .suggestion-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 16px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .suggestion-card:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-focus);
+      transform: translateY(-1px);
+    }
+
+    .suggestion-card .title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .suggestion-card .desc {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .suggestion-card.image-generation {
+      border-color: rgba(139, 92, 246, 0.2);
+    }
+    .suggestion-card.image-generation:hover {
+      border-color: rgba(139, 92, 246, 0.5);
+    }
+
+    /* Message Rows */
+    .message-row {
+      display: flex;
+      gap: 16px;
+      width: 100%;
+      animation: messageEntrance 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes messageEntrance {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message-row.user {
+      flex-direction: row-reverse;
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .message-row.user .avatar {
+      background: #1e293b;
+      color: #fff;
+    }
+
+    .message-row.ai .avatar {
+      background: var(--accent-gradient);
+      color: #fff;
+    }
+
+    .bubble-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-width: 75%;
+    }
+
+    .message-row.user .bubble-wrapper {
+      align-items: flex-end;
+    }
+
+    .bubble {
+      padding: 14px 18px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.6;
+      word-break: break-word;
+    }
+
+    .message-row.user .bubble {
+      background: var(--user-bubble);
+      color: #ffffff;
+      border-top-right-radius: 4px;
+    }
+
+    .message-row.ai .bubble {
+      background: var(--ai-bubble);
+      color: var(--text-main);
+      border-top-left-radius: 4px;
+      border: 1px solid var(--border-color);
+    }
+
+    .bubble p {
+      margin-bottom: 12px;
+    }
+    .bubble p:last-child {
+      margin-bottom: 0;
+    }
+    .bubble strong {
+      color: #ffffff;
+      font-weight: 600;
+    }
+    .bubble code {
+      font-family: var(--font-mono);
+      background: rgba(255, 255, 255, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+    
+    .code-pre code {
+      background: transparent !important;
+      padding: 0 !important;
+      border-radius: 0 !important;
+      display: block;
+      font-size: 13px;
+    }
+
+    .bubble h1, .bubble h2, .bubble h3 {
+      color: #ffffff;
+      margin-top: 16px;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .bubble h1 { font-size: 18px; }
+    .bubble h2 { font-size: 16px; }
+    .bubble h3 { font-size: 14px; }
+    
+    .bubble ul, .bubble ol {
+      margin-left: 20px;
+      margin-bottom: 12px;
+    }
+    .bubble li {
+      margin-bottom: 4px;
+    }
+
+    /* Premium Code Box */
+    .code-container {
+      background: #09090b;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      margin: 12px 0;
+      overflow: hidden;
+      font-family: var(--font-mono);
+    }
+
+    .code-header {
+      background: #121214;
+      padding: 8px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .copy-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+
+    .copy-btn:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-main);
+    }
+
+    .code-pre {
+      padding: 16px;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.5;
+      color: #e2e8f0;
+    }
+
+    /* Image Display Card */
+    .image-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-top: 8px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      max-width: 100%;
+    }
+
+    .image-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: transform 0.3s ease;
+    }
+
+    .image-card img:hover {
+      transform: scale(1.02);
+    }
+
+    .image-footer {
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(9, 9, 11, 0.4);
+      border-top: 1px solid var(--border-color);
+    }
+
+    .image-btn {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .image-btn:hover {
+      background: var(--bg-card-hover);
+      color: #fff;
+      border-color: var(--border-focus);
+    }
+
+    /* Typing Animation */
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 8px 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      width: fit-content;
+    }
+
+    .typing-indicator span {
+      width: 6px;
+      height: 6px;
+      background: var(--text-muted);
+      border-radius: 50%;
+      display: inline-block;
+      animation: bounce 1.4s infinite ease-in-out both;
+    }
+
+    .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+    .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1.0); }
+    }
+
+    /* Aspect Ratio Control Bar */
+    .aspect-strip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 24px;
+      border-top: 1px solid var(--border-color);
+      background: var(--bg-main);
+      overflow-x: auto;
+      max-width: 800px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .aspect-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    .aspect-btn {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      border-radius: 8px;
+      padding: 5px 12px;
+      font-size: 11px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+
+    .aspect-btn.active, .aspect-btn:hover {
+      background: rgba(59, 130, 246, 0.1);
+      border-color: var(--accent-primary);
+      color: #60a5fa;
+    }
+
+    /* Bottom Input Bar Layout */
+    .input-bar-container {
+      background: var(--bg-main);
+      padding: 12px 24px 24px 24px;
+      width: 100%;
+    }
+
+    .input-wrapper-inner {
+      max-width: 800px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .input-box-premium {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 8px 8px 8px 16px;
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .input-box-premium:focus-within {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 1px var(--border-focus);
+    }
+
+    .input-box-premium textarea {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-main);
+      font-size: 14px;
+      font-family: var(--font-sans);
+      resize: none;
+      outline: none;
+      line-height: 1.5;
+      padding: 8px 0;
+      max-height: 160px;
+      min-height: 24px;
+    }
+
+    .input-box-premium textarea::placeholder {
+      color: var(--text-dark);
+    }
+
+    .button-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .input-action-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      border-radius: 12px;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .input-action-btn:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-main);
+    }
+
+    .input-action-btn.active-mode {
+      color: var(--accent-secondary);
+      background: rgba(139, 92, 246, 0.1);
+    }
+
+    .send-premium-btn {
+      background: #ffffff;
+      color: #000000;
+      border: none;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      flex-shrink: 0;
+    }
+
+    .send-premium-btn:hover:not(:disabled) {
+      transform: scale(1.05);
+      background: #f4f4f5;
+    }
+
+    .send-premium-btn:disabled {
+      background: var(--border-color);
+      color: var(--text-dark);
+      cursor: not-allowed;
+    }
+
+    .footer-credits {
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-dark);
+      margin-top: 10px;
+    }
+
+    /* Modal Overlay System */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 440px;
+      padding: 28px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+      animation: modalEntrance 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes modalEntrance {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 20px;
+      cursor: pointer;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-close:hover {
+      color: #fff;
+    }
+
+    .modal-body {
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .modal-body button {
+      width: 100%;
+      margin-top: 16px;
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .modal-body button:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--accent-primary);
+    }
+
+    /* System Warnings */
+    .system-banner {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+      width: 100%;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Screen 1: Setup -->
+  <div id="setup-screen" class="screen active">
+    <div class="setup-container">
+      <div class="brand-header">
+        <div class="logo-container">🤖</div>
+        <h1 class="brand-title">Saathi AI</h1>
+        <p class="brand-sub">Your premium smart companion for learning, creativity &amp; fun conversations.</p>
+      </div>
+
+      <div class="form-group">
+        <label>What should I call you?</label>
+        <div class="input-wrapper">
+          <input type="text" id="user-name" placeholder="Alex" value="Friend" onkeydown="if (event.key === 'Enter') startChat()">
+        </div>
+      </div>
+
+      <button class="action-btn" onclick="startChat()">
+        🚀 Start Chatting with Saathi
+      </button>
+      
+      <button class="action-btn secondary" onclick="startDemoMode()">
+        Try Demo Mode (No name)
+      </button>
+
+      <p style="text-align:center; font-size:11px; color:var(--text-dark); margin-top:20px;">
+        Demo version • Simulated AI responses • Fully works offline
+      </p>
+    </div>
+  </div>
+
+  <!-- Screen 2: Chat -->
+  <div id="chat-screen" class="screen">
+    <!-- Navbar -->
+    <div class="navbar">
+      <div class="nav-brand">
+        <div class="nav-logo">🤖</div>
+        <div class="nav-meta">
+          <div class="nav-name">
+            Saathi AI 
+            <span class="status-indicator"></span>
+          </div>
+          <div class="nav-sub" id="nav-subtitle">Online • Ready to help</div>
+        </div>
+      </div>
+      
+      <div class="nav-actions">
+        <button class="icon-button" onclick="newChat()" title="New Chat">🔄</button>
+        <button class="icon-button" onclick="openSettings()" title="Settings">⚙️</button>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="message-container" id="message-container">
+      <!-- Dynamic messages added by JS -->
+    </div>
+
+    <!-- Aspect Ratio Bar (for image gen) -->
+    <div class="aspect-strip">
+      <span class="aspect-label">Image Style:</span>
+      <button class="aspect-btn active" data-aspect="1:1" onclick="setAspect(this, '1:1')">Square 1:1</button>
+      <button class="aspect-btn" data-aspect="16:9" onclick="setAspect(this, '16:9')">Landscape 16:9</button>
+      <button class="aspect-btn" data-aspect="9:16" onclick="setAspect(this, '9:16')">Portrait 9:16</button>
+      <button class="aspect-btn" data-aspect="4:3" onclick="setAspect(this, '4:3')">Classic 4:3</button>
+    </div>
+
+    <!-- Input Bar -->
+    <div class="input-bar-container">
+      <div class="input-wrapper-inner">
+        <div class="input-box-premium">
+          <textarea id="user-input" placeholder="Type your message... (or click a suggestion above)" rows="1"></textarea>
+          
+          <div class="button-group">
+            <button class="input-action-btn" onclick="triggerImageGeneration()" title="Generate Image">🖼️</button>
+            <button class="send-premium-btn" id="send-btn" onclick="sendMessage()">
+              ➤
+            </button>
+          </div>
+        </div>
+        
+        <div class="footer-credits">
+          Saathi AI Demo • Built with ❤️ • Responses are simulated
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="settings-modal" onclick="if (event.target.id === 'settings-modal') closeModal()">
+    <div class="modal-card" onclick="event.stopImmediatePropagation()">
+      <div class="modal-header">
+        <div class="modal-title">Settings</div>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p>This is a fully working demo version of Saathi AI.</p>
+        <p style="margin-top:12px;">All chat responses are simulated locally for offline use.</p>
+        
+        <button onclick="clearChat(); closeModal();">🗑️ Clear Current Chat</button>
+        <button onclick="resetToSetup(); closeModal();">🔙 Go back to Setup Screen</button>
+        
+        <p style="margin-top:20px; font-size:12px; color:var(--text-dark);">
+          For real AI (Grok / Claude / GPT), connect your API key in the full version.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==================== GLOBAL STATE ====================
+    let currentUserName = "Friend";
+    let currentAspect = "1:1";
+    let messageHistory = [];
+    let isTyping = false;
+
+    // Sample wholesome responses (safe for all ages)
+    const aiResponses = [
+      "Arre waah! Yeh bahut accha sawal hai. Main soch raha hoon...",
+      "Haan bilkul! Main help kar sakta hoon. Yeh lo ek simple explanation:",
+      "Mast idea! Aisa karte hain...",
+      "Interesting! Mujhe yeh topic bahut pasand hai. Suno...",
+      "Theek hai, chalo step by step samajhte hain.",
+      "Kya baat hai! Yeh dekh lo, shayad yeh kaam aaye:",
+      "Bilkul sahi socha tune. Main yeh suggest karta hoon:",
+      "Achha sawal! Main thoda research karta hoon... yeh raha answer:",
+      "Haha, yeh funny hai! Lekin seriously, yeh lo ek helpful tip:",
+      "Main samajh gaya. Yeh lo ek detailed jawab:"
+    ];
+
+    const funFacts = [
+      "Did you know? Octopus has three hearts! 🐙",
+      "Honey never spoils. Archaeologists found 3000-year-old honey that was still good!",
+      "A single bolt of lightning can heat the air around it to 30,000°C — hotter than the surface of the sun!",
+      "Bananas are berries, but strawberries aren't!",
+      "The shortest war in history lasted only 38 minutes (between Britain and Zanzibar in 1896)."
+    ];
+
+    // ==================== SCREEN SWITCHING ====================
+    function switchScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(screen => {
+        screen.classList.remove('active');
+      });
+      const target = document.getElementById(screenId);
+      if (target) {
+        target.classList.add('active');
+      }
+    }
+
+    // ==================== START CHAT ====================
+    function startChat() {
+      const nameInput = document.getElementById('user-name');
+      currentUserName = nameInput.value.trim() || "Friend";
+      
+      switchScreen('chat-screen');
+      initChat();
+    }
+
+    function startDemoMode() {
+      currentUserName = "Demo User";
+      switchScreen('chat-screen');
+      initChat();
+    }
+
+    function initChat() {
+      const container = document.getElementById('message-container');
+      container.innerHTML = '';
+      messageHistory = [];
+
+      // Welcome message
+      const welcomeHTML = `
+        <div class="welcome-container">
+          <div class="welcome-icon">👋</div>
+          <h2 class="welcome-title">Namaste, ${currentUserName}!</h2>
+          <p class="welcome-sub">Main Saathi hoon — tumhara smart AI dost. Kya seekhna hai aaj? Homework, coding, fun facts, ya koi idea?</p>
+        </div>
+      `;
+      container.innerHTML = welcomeHTML;
+
+      // Add suggestion cards
+      addSuggestionCards();
+
+      // Focus input
+      setTimeout(() => {
+        document.getElementById('user-input').focus();
+      }, 600);
+
+      // Setup input listeners
+      setupInputListeners();
+    }
+
+    function addSuggestionCards() {
+      const container = document.getElementById('message-container');
+      
+      const suggestionsHTML = `
+        <div class="suggestions-grid" style="margin-top: 20px; max-width: 620px; margin-left: auto; margin-right: auto;">
+          <div class="suggestion-card" onclick="useSuggestion('Tell me a fun science fact')">
+            <div class="title">🔬 Fun Science Fact</div>
+            <div class="desc">Kuch interesting science seekhein</div>
+          </div>
+          <div class="suggestion-card" onclick="useSuggestion('Help me with my homework')">
+            <div class="title">📚 Homework Help</div>
+            <div class="desc">Maths, Science ya English mein madad</div>
+          </div>
+          <div class="suggestion-card" onclick="useSuggestion('Suggest a good movie or series')">
+            <div class="title">🎬 Movie Suggestion</div>
+            <div class="desc">Family friendly ya fun movies</div>
+          </div>
+          <div class="suggestion-card image-generation" onclick="triggerImageGeneration()">
+            <div class="title">🖼️ Generate an Image</div>
+            <div class="desc">Cool landscape, space ya abstract art</div>
+          </div>
+          <div class="suggestion-card" onclick="useSuggestion('How to stay motivated for studies')">
+            <div class="title">💪 Stay Motivated</div>
+            <div class="desc">Study tips aur motivation</div>
+          </div>
+          <div class="suggestion-card" onclick="useSuggestion('Explain how AI works simply')">
+            <div class="title">🤖 How AI Works</div>
+            <div class="desc">Simple explanation for beginners</div>
+          </div>
+        </div>
+      `;
+      
+      // Remove old suggestions if any
+      const oldSuggestions = container.querySelector('.suggestions-grid');
+      if (oldSuggestions) oldSuggestions.remove();
+      
+      container.insertAdjacentHTML('beforeend', suggestionsHTML);
+    }
+
+    function useSuggestion(text) {
+      // Remove welcome + suggestions
+      clearWelcomeState();
+      
+      // Send as user message
+      addMessage('user', text);
+      
+      // Get AI reply
+      setTimeout(() => {
+        const reply = generateAIResponse(text);
+        addMessage('ai', reply);
+      }, 900);
+    }
+
+    function clearWelcomeState() {
+      const container = document.getElementById('message-container');
+      // Remove welcome and any existing suggestion grids safely
+      const welcome = container.querySelector('.welcome-container');
+      const suggestions = container.querySelectorAll('.suggestions-grid');
+      if (welcome) welcome.remove();
+      suggestions.forEach(el => el.remove());
+    }
+
+    // ==================== MESSAGE HANDLING ====================
+    function addMessage(role, content, isImage = false, imageUrl = null) {
+      const container = document.getElementById('message-container');
+      
+      // Remove welcome if still there
+      const welcome = container.querySelector('.welcome-container');
+      if (welcome) welcome.remove();
+      
+      const row = document.createElement('div');
+      row.className = `message-row ${role}`;
+
+      let avatarHTML = '';
+      if (role === 'user') {
+        avatarHTML = `<div class="avatar">👤</div>`;
+      } else {
+        avatarHTML = `<div class="avatar">🤖</div>`;
+      }
+
+      let bubbleContent = '';
+      
+      if (isImage && imageUrl) {
+        bubbleContent = `
+          <div class="image-card">
+            <img src="${imageUrl}" alt="Generated image by Saathi AI" />
+            <div class="image-footer">
+              <button class="image-btn" onclick="downloadImage('${imageUrl}')">⬇️ Download</button>
+              <button class="image-btn" onclick="regenerateImage(this)">🔄 Regenerate</button>
+            </div>
+          </div>
+        `;
+      } else {
+        // Format content (support basic markdown-like)
+        let formatted = content
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/`(.*?)`/g, '<code>$1</code>')
+          .replace(/\n/g, '<br>');
+        
+        bubbleContent = `<div class="bubble"><p>${formatted}</p></div>`;
+      }
+
+      row.innerHTML = `
+        ${avatarHTML}
+        <div class="bubble-wrapper">
+          ${bubbleContent}
+        </div>
+      `;
+
+      container.appendChild(row);
+      container.scrollTop = container.scrollHeight;
+
+      // Save to history
+      messageHistory.push({ role, content, isImage, imageUrl });
+    }
+
+    function showTyping() {
+      if (isTyping) return;
+      isTyping = true;
+
+      // Remove any existing typing indicator first (safety)
+      const existing = document.getElementById('typing-indicator');
+      if (existing) existing.remove();
+
+      const container = document.getElementById('message-container');
+      const typingDiv = document.createElement('div');
+      typingDiv.className = 'message-row ai';
+      typingDiv.id = 'typing-indicator';
+      typingDiv.innerHTML = `
+        <div class="avatar">🤖</div>
+        <div class="typing-indicator">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      `;
+      container.appendChild(typingDiv);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function hideTyping() {
+      const typing = document.getElementById('typing-indicator');
+      if (typing) typing.remove();
+      isTyping = false;
+    }
+
+    // ==================== AI RESPONSE GENERATOR ====================
+    function generateAIResponse(userMessage) {
+      const msg = userMessage.toLowerCase();
+
+      // Fun fact
+      if (msg.includes('fact') || msg.includes('science')) {
+        return funFacts[Math.floor(Math.random() * funFacts.length)];
+      }
+
+      // Homework / explain
+      if (msg.includes('homework') || msg.includes('explain') || msg.includes('how')) {
+        return "Bilkul! Main simple language mein samjhaata hoon. Pehle yeh samajh lo ki yeh topic kya hai, phir examples ke saath. Agar aur detail chahiye toh pooch lena!";
+      }
+
+      // Movie
+      if (msg.includes('movie') || msg.includes('series') || msg.includes('watch')) {
+        return "Family ke saath dekhne ke liye main recommend karta hoon: 'The Wild Robot', 'Elemental', ya 'Inside Out 2'. Agar coding wali feel chahiye toh 'The Social Network' bhi acchi hai!";
+      }
+
+      // Motivation
+      if (msg.includes('motivat') || msg.includes('study')) {
+        return "Padhai mein motivation ke liye yeh try karo: Har 25 minute padho, phir 5 minute break (Pomodoro technique). Apne goal ko chhote-chhote steps mein todo. Tum kar sakte ho! 💪";
+      }
+
+      // AI how it works
+      if (msg.includes('ai') || msg.includes('artificial')) {
+        return "AI basically patterns seekhta hai bahut saare data se. Jaise tum ek cheez kai baar dekhte ho toh samajh jaate ho, waise hi AI bhi. Main (Grok style) patterns use karke helpful answers deta hoon. Cool na?";
+      }
+
+      // Greeting
+      if (msg.includes('hello') || msg.includes('hi') || msg.includes('namaste')) {
+        return `Namaste ${currentUserName}! Kaise ho? Aaj kya seekhna ya discuss karna hai?`;
+      }
+
+      // Default helpful response
+      const base = aiResponses[Math.floor(Math.random() * aiResponses.length)];
+      return base + " Agar aur kuch poochna ho toh bilkul pooch lo!";
+    }
+
+    // ==================== SEND MESSAGE ====================
+    function sendMessage() {
+      const input = document.getElementById('user-input');
+      const sendBtn = document.getElementById('send-btn');
+      const text = input.value.trim();
+      
+      if (!text || isTyping) return;
+
+      // Clear welcome state on first real message
+      clearWelcomeState();
+
+      addMessage('user', text);
+      input.value = '';
+      input.style.height = 'auto';           // Reset height
+      sendBtn.disabled = true;               // Disable send button
+
+      // Show typing
+      showTyping();
+
+      // Simulate thinking time
+      setTimeout(() => {
+        hideTyping();
+        
+        const aiReply = generateAIResponse(text);
+        addMessage('ai', aiReply);
+        
+        // Occasionally add a fun follow-up suggestion
+        if (Math.random() > 0.7) {
+          setTimeout(() => {
+            const container = document.getElementById('message-container');
+            if (!container.querySelector('.suggestions-grid')) {
+              addSuggestionCards();
+            }
+          }, 1200);
+        }
+      }, 1100 + Math.random() * 600);
+    }
+
+    // ==================== IMAGE GENERATION (DEMO) ====================
+    function triggerImageGeneration() {
+      clearWelcomeState();
+      
+      const container = document.getElementById('message-container');
+      
+      // Add user message
+      addMessage('user', 'Generate a cool image for me');
+
+      showTyping();
+
+      setTimeout(() => {
+        hideTyping();
+        
+        // Pick a nice demo image from picsum (different each time)
+        const imageId = Math.floor(Math.random() * 50) + 10;
+        const imageUrl = `https://picsum.photos/id/${imageId}/800/600`;
+        
+        const aiText = `Yeh lo ek sundar image! (Aspect: ${currentAspect}). Agar change karna ho toh batao.`;
+        
+        // Add AI text + image
+        addMessage('ai', aiText);
+        
+        // Add the image card separately
+        setTimeout(() => {
+          const imgRow = document.createElement('div');
+          imgRow.className = 'message-row ai';
+          imgRow.innerHTML = `
+            <div class="avatar">🤖</div>
+            <div class="bubble-wrapper">
+              <div class="image-card">
+                <img src="${imageUrl}" alt="AI generated image" />
+                <div class="image-footer">
+                  <button class="image-btn" onclick="downloadImage('${imageUrl}')">⬇️ Download</button>
+                  <button class="image-btn" onclick="regenerateImage(this)">🔄 New Image</button>
+                </div>
+              </div>
+            </div>
+          `;
+          container.appendChild(imgRow);
+          container.scrollTop = container.scrollHeight;
+
+          // Re-show suggestions after image so user can continue chatting easily
+          setTimeout(() => {
+            const currentContainer = document.getElementById('message-container');
+            if (!currentContainer.querySelector('.suggestions-grid')) {
+              addSuggestionCards();
+            }
+          }, 1800);
+        }, 300);
+
+      }, 1400);
+    }
+
+    function regenerateImage(btn) {
+      const card = btn.closest('.image-card');
+      const img = card.querySelector('img');
+      
+      btn.innerHTML = '⏳ Generating...';
+      btn.disabled = true;
+
+      setTimeout(() => {
+        const newId = Math.floor(Math.random() * 80) + 5;
+        img.src = `https://picsum.photos/id/${newId}/800/600`;
+        btn.innerHTML = '🔄 New Image';
+        btn.disabled = false;
+      }, 900);
+    }
+
+    function downloadImage(url) {
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'saathi-ai-image.jpg';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // ==================== ASPECT RATIO ====================
+    function setAspect(element, aspect) {
+      // Remove active from all
+      document.querySelectorAll('.aspect-btn').forEach(btn => btn.classList.remove('active'));
+      element.classList.add('active');
+      currentAspect = aspect;
+      
+      // Optional: show toast
+      const toast = document.createElement('div');
+      toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#16161a;border:1px solid #3b82f6;color:#60a5fa;padding:6px 14px;border-radius:20px;font-size:12px;';
+      toast.textContent = `Image style set to ${aspect}`;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.transition = 'all 0.3s';
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 1200);
+    }
+
+    // ==================== INPUT LISTENERS ====================
+    function setupInputListeners() {
+      const input = document.getElementById('user-input');
+      const sendBtn = document.getElementById('send-btn');
+
+      // Auto resize textarea
+      input.addEventListener('input', () => {
+        input.style.height = 'auto';
+        input.style.height = Math.min(input.scrollHeight, 160) + 'px';
+        
+        // Enable/disable send button
+        sendBtn.disabled = input.value.trim() === '';
+      });
+
+      // Send on Enter (Shift+Enter = new line)
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+
+      // Initial state of send button
+      sendBtn.disabled = true;
+    }
+
+    // ==================== OTHER FEATURES ====================
+    function newChat() {
+      if (confirm('Start a fresh chat?')) {
+        const container = document.getElementById('message-container');
+        container.innerHTML = '';
+        initChat();
+      }
+    }
+
+    function openSettings() {
+      document.getElementById('settings-modal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('settings-modal').classList.remove('active');
+    }
+
+    function clearChat() {
+      const container = document.getElementById('message-container');
+      container.innerHTML = '';
+      initChat();
+    }
+
+    function resetToSetup() {
+      switchScreen('setup-screen');
+      // Reset name input
+      document.getElementById('user-name').value = currentUserName;
+    }
+
+    // ==================== KEYBOARD SHORTCUTS ====================
+    document.addEventListener('keydown', function(e) {
+      if (e.key === '/' && document.getElementById('chat-screen').classList.contains('active')) {
+        const input = document.getElementById('user-input');
+        if (document.activeElement !== input) {
+          e.preventDefault();
+          input.focus();
+        }
+      }
+      
+      if (e.key.toLowerCase() === '?' && e.shiftKey) {
+        e.preventDefault();
+        const settings = document.getElementById('settings-modal');
+        if (settings.classList.contains('active')) {
+          closeModal();
+        } else {
+          openSettings();
+        }
+      }
+    });
+
+    // ==================== INITIALIZE ====================
+    console.log('%c[Saathi AI] Fully working demo loaded successfully!', 'color:#3b82f6');
+    
+    // Bonus: Press "D" on setup screen for instant demo
+    document.addEventListener('keypress', function(e) {
+      if (e.key.toLowerCase() === 'd' && document.getElementById('setup-screen').classList.contains('active')) {
+        startDemoMode();
+      }
+    });
+  </script>
+</body>
+</html>
