@@ -2369,6 +2369,43 @@
     .mode-chip .chip-x:hover { background: rgba(255,255,255,.2); color: #fff; }
     .mode-chip svg { flex-shrink: 0; }
 
+    /* ─── Chat input — typed-query suggestions (history se, sabse jyada
+       search ki gayi query sabse upar — Perplexity jaisa) ─── */
+    .chat-sugg-box {
+      background: #1e1e1e;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px;
+      margin-bottom: 8px;
+      overflow: hidden;
+      animation: menuIn .18s cubic-bezier(.16,1,.3,1) both;
+    }
+    .chat-sugg-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 11px 14px;
+      cursor: pointer;
+      transition: background .12s;
+    }
+    .chat-sugg-row:hover, .chat-sugg-row:active { background: rgba(255,255,255,.07); }
+    .chat-sugg-row + .chat-sugg-row { border-top: 1px solid rgba(255,255,255,.05); }
+    .chat-sugg-icon { color: rgba(255,255,255,.4); flex-shrink: 0; }
+    .chat-sugg-text {
+      flex: 1; min-width: 0;
+      font-size: 14px; color: rgba(255,255,255,.38);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      font-family: var(--font);
+    }
+    /* typed prefix bold + brighter, rest stays dim */
+    .chat-sugg-typed { color: rgba(255,255,255,.75); font-weight: 500; }
+    .chat-sugg-fill {
+      width: 30px; height: 30px; flex-shrink: 0;
+      border-radius: 50%; border: none; background: transparent;
+      color: rgba(255,255,255,.35);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; padding: 0;
+      transition: background .12s, color .12s;
+    }
+    .chat-sugg-fill:hover { background: rgba(255,255,255,.1); color: #ececec; }
+
     /* ─── INPUT BOX — Premium Claude style ─── */
     .input-box {
       background: #1a1a1a;
@@ -4271,6 +4308,8 @@
         </div>
       </div>
 
+      <div class="chat-sugg-box" id="chat-sugg-box" style="display:none;"></div>
+
       <div class="input-box">
         <textarea
           id="chat-ta"
@@ -4279,6 +4318,8 @@
           placeholder="Reply to Saathi…"
           onkeydown="handleKey(event)"
           oninput="onInput(this)"
+          onfocus="_updateChatSuggestions(this.value)"
+          onblur="_hideChatSuggestionsSoon()"
         ></textarea>
 
         <!-- Bottom row: + button on left, send on right -->
@@ -5321,6 +5362,7 @@
   /* ── AUTO LOGIN if key saved ────────────────── */
   window.addEventListener('DOMContentLoaded', () => {
     loadAllChats();
+    _loadQueryFreq();
     if (GEMINI_KEY || GROQ_KEY) {
       document.getElementById('setup-key').value    = GROQ_KEY;
       document.getElementById('setup-hf').value     = HF_KEY;
@@ -5886,6 +5928,7 @@
       el.style.overflowY = 'auto';
     }
     updateSendBtn();
+    _updateChatSuggestions(el.value);
 
     // Textarea grow/shrink can make Chrome scroll the focused field
     // into view, which throws off the chat-screen height/position.
@@ -5893,6 +5936,151 @@
     if (window._adjustForKeyboard) {
       requestAnimationFrame(window._adjustForKeyboard);
     }
+  }
+
+  // ═══════════════════════════════════════════════════
+  // SECTION: JS — Chat input suggestions (Google Autocomplete — real trending)
+  // ═══════════════════════════════════════════════════
+  // Google Suggest API use karta hai via /api/suggest Vercel proxy —
+  // actual real-time popular searches, language-aware (hi/en auto-detect).
+
+  let _suggMatches = [];   // abhi dropdown mein dikh rahe matches
+  let _suggDebounce = null; // debounce timer
+
+  // Dummy — pehle ye _recordSearchQuery call hoti thi, ab nahi chahiye
+  // lekin agar koi purani jagah call ho to error na aaye isliye rakha
+  function _recordSearchQuery() {}
+  function _loadQueryFreq() {}
+
+  // Detect agar input mainly Hindi/Hinglish/Devanagari hai
+  function _isHindiInput(text) {
+    if (/[\u0900-\u097F]/.test(text)) return true;
+    const hinglishWords = ['kya','kaise','kaun','kitna','kitni','batao','mujhe','mera','tera',
+      'aur','hai','hain','ka','ki','ke','se','mein','par','ko','ne','yaar','bhai',
+      'karo','karna','chahiye','wala','wali','nahi','hoga','hoti','hote','tha','thi'];
+    return text.toLowerCase().split(/\s+/).some(w => hinglishWords.includes(w));
+  }
+
+  // Fallback seeds — proxy fail hone par (offline ya rate-limit)
+  const _FALLBACK_HI = [
+    "Kaise","Kya hai","Batao","Kaise kare","Recipe batao",
+    "Bharat ka","Kaise seekhe","Kaise banaye","Kya hota hai","Kaise kaam karta hai",
+    "Weight loss","Python kaise","Share market","Health tips","Motivation",
+  ];
+  const _FALLBACK_EN = [
+    "How to","What is","How does","Best way to","Explain",
+    "How to learn","What are","Why is","When did","Where is",
+    "How to make","Benefits of","Tips for","Difference between","How do",
+  ];
+
+  // Google Autocomplete fetch via Vercel proxy /api/suggest
+  async function _fetchGoogleSuggestions(query) {
+    try {
+      const lang = _isHindiInput(query) ? 'hi' : 'en';
+      const url = '/api/suggest?q=' + encodeURIComponent(query) + '&hl=' + lang;
+      const ctrl = new AbortController();
+      const timer = setTimeout(function() { ctrl.abort(); }, 3000);
+      const r = await fetch(url, { signal: ctrl.signal });
+      clearTimeout(timer);
+      if (!r.ok) return null; // null = proxy fail
+      const data = await r.json();
+      return Array.isArray(data) ? data.slice(0, 5) : null;
+    } catch(e) { return null; } // null = proxy fail
+  }
+
+  // Fallback: hardcoded seeds se prefix match
+  function _getFallbackSuggestions(query) {
+    const seeds = _isHindiInput(query) ? _FALLBACK_HI : _FALLBACK_EN;
+    const qLow = query.toLowerCase();
+    return seeds
+      .filter(s => s.toLowerCase().includes(qLow))
+      .slice(0, 5);
+  }
+
+  function _renderSuggestions(matches, q) {
+    const box = document.getElementById('chat-sugg-box');
+    if (!box) return;
+    if (!matches || !matches.length) { _hideChatSuggestionsNow(); return; }
+    // matches string array ya object array dono handle karo
+    _suggMatches = matches.map(s => ({ display: typeof s === 'string' ? s : (s.display || s.phrase || String(s)) }));
+
+    // Matched part bold highlight (Google jaisa)
+    function _highlight(text, prefix) {
+      var safe = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      var idx = safe.toLowerCase().indexOf(prefix.toLowerCase());
+      if (idx === -1) return safe;
+      return safe.slice(0, idx) +
+        '<span class="chat-sugg-typed">' + safe.slice(idx, idx + prefix.length) + '</span>' +
+        safe.slice(idx + prefix.length);
+    }
+
+    box.innerHTML = _suggMatches.map((m, i) =>
+      '<div class="chat-sugg-row" data-idx="' + i + '">' +
+        '<svg class="chat-sugg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' +
+        '<span class="chat-sugg-text">' + _highlight(m.display, q) + '</span>' +
+        '<button class="chat-sugg-fill" data-idx="' + i + '" aria-label="Fill" tabindex="-1">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="17" y1="7" x2="7" y2="17"/><polyline points="9 7 7 7 7 9"/><polyline points="15 17 17 17 17 15"/></svg>' +
+        '</button>' +
+      '</div>'
+    ).join('');
+
+    box.querySelectorAll('.chat-sugg-row').forEach((row, i) => {
+      row.addEventListener('mousedown', function(e) {
+        if (e.target.closest('.chat-sugg-fill')) return;
+        e.preventDefault();
+        _chooseChatSuggestion(_suggMatches[i].display, true);
+      });
+    });
+    box.querySelectorAll('.chat-sugg-fill').forEach((btn, i) => {
+      btn.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        _chooseChatSuggestion(_suggMatches[i].display, false);
+      });
+    });
+
+    box.style.display = 'block';
+  }
+
+  function _updateChatSuggestions(val) {
+    const box = document.getElementById('chat-sugg-box');
+    if (!box) return;
+    const q = (val || '').trim();
+    if (q.length < 2) { _hideChatSuggestionsNow(); return; }
+
+    // Debounce — 400ms baad fetch karo, har keystroke pe nahi
+    clearTimeout(_suggDebounce);
+    _suggDebounce = setTimeout(async function() {
+      let results = await _fetchGoogleSuggestions(q);
+      // Proxy fail ya empty — hardcoded fallback use karo
+      if (!results || !results.length) results = _getFallbackSuggestions(q);
+      // Stale check — user ne aur type kiya to ignore
+      const ta = document.getElementById('chat-ta');
+      const current = ta ? ta.value.trim() : '';
+      if (current !== q) return;
+      _renderSuggestions(results, q);
+    }, 400);
+  }
+
+  function _hideChatSuggestionsNow() {
+    const box = document.getElementById('chat-sugg-box');
+    if (box) { box.style.display = 'none'; box.innerHTML = ''; }
+  }
+
+  function _hideChatSuggestionsSoon() {
+    // Thoda delay — taaki suggestion row/arrow ka mousedown blur se pehle
+    // process ho jaaye (race ka safety-net; preventDefault se waise hi blur
+    // zyadatar rok jaata hai).
+    setTimeout(_hideChatSuggestionsNow, 150);
+  }
+
+  function _chooseChatSuggestion(text, autoSend) {
+    const ta = document.getElementById('chat-ta');
+    if (!ta) return;
+    ta.value = text;
+    onInput(ta); // height resize + suggestions refresh (apne hi text se match hatega → auto-hide)
+    ta.focus();
+    if (autoSend) sendMessage();
   }
 
   let _busyStartTime = 0;
@@ -6219,7 +6407,17 @@
           lbl.querySelector('.msg-retry-btn').addEventListener('click', function() {
             if (window._retryFromFailed) window._retryFromFailed();
           });
-        }, 65000); // 65s delay — user ko itna wait karne do, net slow ho sakta hai
+        }, 4000); // BUG FIX: pehle yahan 65000ms (65 SECONDS!) tha — galti se. Is point
+        // tak pohochne ka matlab hi hai ki doChat() apni PURI fallback chain
+        // (Gemini → Groq → 2s wait → Pollinations → Gemini retry → Groq retry)
+        // already poori tarah khatam kar chuki hai aur await se wapas aa gayi hai —
+        // matlab koi "abhi bhi background mein try ho raha hai" wali situation
+        // hoti hi nahi hai jiske liye itna lamba wait justified ho. 65s ka matlab
+        // tha user 1-2 minute tak bilkul blank screen dekhta rehta tha (na reply
+        // na error) us sabse upar jo time fallback chain mein already lag chuka
+        // tha. Ab sirf chhota fade-delay (4s) — aur waise bhi agar appendMsg('ai', …)
+        // already chal gaya hoga (jo humne doChat() ke har fail-path mein add kiya
+        // hai), to yeh card khud cancel ho jaayega (_cancelNextErrorCard).
       }
     }
   }
@@ -6301,6 +6499,12 @@
     if (!rawText && pendingAttachments.length === 0) return;
     window._lastApiError = false; // Reset error flag for this send cycle
     window._lastErrorType = 'unknown';
+
+    // Suggestion dropdown band karo aur is query ko frequency-log mein record
+    // karo — agli baar koi isse milta-julta type kare to ye suggestion mein
+    // upar dikhega (jitna jyada baar search, utna upar — Perplexity jaisa).
+    _hideChatSuggestionsNow();
+    if (rawText) _recordSearchQuery(rawText, true);
 
     // Naya sawaal aaya — purani limit/error notice aur related-suggestions
     // dono ko fade-out karke hata do
@@ -6616,7 +6820,15 @@
     '1b. MATH/PHYSICS RULE (ABSOLUTE — zero exceptions, ALWAYS follow): Har ek equation, formula, number, calculation, aur variable LaTeX mein likho — kabhi bhi plain text mein NAHI. Inline ke liye $...$ aur display equation ke liye \\[...\\] use karo. Examples: "$v = u + at$" SAHI, "v = u + at" GALAT. "$s = ut + \\frac{1}{2}at^2$" SAHI, "s = ut + (1/2)at²" GALAT. Ye rule chat, search, deep-research, SABHI modes mein mandatory hai — iska violation kabhi nahi hona chahiye.\n' +
     '2. NEVER add filler questions at the end like "Kuch aur batao?", "Aur kuch chahiye?", "Koi sawaal?". Just answer and STOP.\n' +
     '3. NEVER ask "Kaise ho?" or "Kya chal raha hai?" unless user literally just said hi with nothing else.\n' +
-    '4. If user says "Hi"/"Hello"/"Hey"/"Yo" (ya kisi language mein casual greeting) with nothing else → respond casually in MAXIMUM 5-6 words, NOT a question-answer-like format, jaise ek dost reply karta hai. VARIETY ZAROORI HAI — kabhi bhi same exact phrase repeat mat karo (na hi "Bol yaar, kya scene hai?" har baar, na hi "Hey what\'s up" har baar). Conversation history dekho — pichle messages mein jo greeting style use ki thi, is baar DIFFERENT style try karo. Examples (ye sirf inspiration hain, khud bhi naye banao, mood/context ke hisaab se pick karo): "Bol yaar, kya scene hai?", "Hey! Kya chal raha hai?", "Aa gaya tu! Bol kya hua?", "Yo! Sab badiya?", "Kya haal yaar?", "Bata, kya kaam hai?", "Hey hey, kya scene?", "Aur bhai, sab theek?". User ki language match karo (Hindi/English/Hinglish jo bhi ho).\n' +
+    '4. GREETING RULE — jab user sirf ek chhota greeting bheje ("hi", "hello", "hey", "kais eho", "kya haal", "yo", koi bhi casual opener bina kisi topic ke):\n' +
+    '   Ek REAL dost ki tarah reply karo — jo bhi us waqt naturally aaye, wahi likho. Koi template nahi, koi fixed format nahi.\n' +
+    '   FEEL: Jaise WhatsApp pe kisi close yaar ka message aaya ho aur tune spontaneously reply kiya — thoda curious, thoda chill, bilkul zero effort wala vibe.\n' +
+    '   HARD RULES:\n' +
+    '   - MAX 1-2 lines. Kabhi zyada nahi.\n' +
+    '   - Koi pre-decided phrase repeat mat karo. Pichla reply dekho — agar wahan "kya scene" tha, ab kuch aur socho. Agar wahan "bol" tha, ab alag angle lo.\n' +
+    '   - Koi examples nahi hain tere paas to follow karne ke liye — tu khud se generate kar, us moment ke hisaab se jo genuinely natural lage.\n' +
+    '   - User ki language mirror karo (Hinglish, Hindi, English — jo bhi aaya ho).\n' +
+    '   - Filler questions mat poochho ("Kuch aur chahiye?", "Main madad kar sakta hoon") — ye robot jaisa lagta hai.\n\n' +
     '5. NEVER be off-topic. User asked X → answer X only. No side stories, no tangents.\n' +
     '6. NEVER mention who made you unless directly asked by name.\n' +
     '6d. NAAM RULE: Agar user ka naam pata hai (neeche "USER KA NAAM" dekho), to use jab natural lage tab use karo, jaise koi dost naam se bulata hai — har message mein zaroori nahi, sirf jab achha lage.\n' +
@@ -7063,12 +7275,11 @@
   // ═══════════════════════════════════════════════════
   async function callGroq(model, messages) {
     const controller = new AbortController();
-    // ROBUSTNESS: 20s → 10s. Purana 20s timeout, jab 3 models sequentially
-    // try hote the (Groq fallback loop), worst-case 60s tak stack ho jaata
-    // tha ek hi message ke liye. 10s kaafi hai Groq jaise fast inference
-    // provider ke liye — agar response nahi aaya, fail-fast karke agle
-    // provider/model pe jaana behtar hai.
-    const timer = setTimeout(() => controller.abort(), 20000); // 12s → 20s: long responses ke liye
+    // ROBUSTNESS: 20s timeout. Pehle 10s tha (fail-fast ke liye) — lekin long
+    // streaming responses (deep research synthesis, detailed code answers) 10s
+    // mein complete nahi hote the, isliye 20s kiya. Groq fast hai, 20s se zyada
+    // genuine hang hi hoga — is case mein AbortController cancel kar deta hai.
+    const timer = setTimeout(() => controller.abort(), 20000);
     try {
       const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
@@ -7592,6 +7803,10 @@
         console.error('[Saathi] doChat: API key invalid (401) — Groq key check karo');
         window._lastApiError = true;
         window._lastErrorType = 'auth';
+        // BUG FIX: pehle yahan koi appendMsg() nahi tha — user ko sirf ek
+        // invisible flag set hota tha, chat mein koi reply/error bubble kabhi
+        // nahi dikhta tha ("na reply na error" wala bug). Ab seedha bata do.
+        appendMsg('ai', 'API key sahi nahi lag rahi yaar — Settings mein ek baar check karle. 🔑');
       } else if (errorStatus === 429) {
         // Groq rate limited — Gemini se try karo pehle
         console.warn('[Saathi] doChat: Groq rate limit (429) — Gemini fallback try ho raha hai');
@@ -7628,6 +7843,9 @@
         } else {
           window._lastApiError = true;
           window._lastErrorType = 'quota';
+          // BUG FIX: yahan bhi sirf flag set hota tha, chat mein kuch nahi
+          // dikhta tha — ab user ko clearly bata do.
+          appendMsg('ai', 'Aaj ka limit lagta hai khatam ho gaya yaar — thodi der baad try karo, ya Settings mein doosri key daal do. 🙂');
         }
       } else {
         // ROBUSTNESS FIX: pehle yahan Gemini → Groq(×3 models) → Pollinations
@@ -7698,6 +7916,12 @@
           } else {
             window._lastApiError = true;
             window._lastErrorType = 'network';
+            // BUG FIX (asli bug): yahan tak pohochna matlab Gemini, Groq, aur
+            // Pollinations TEEN providers fail ho chuke hain — yeh sabse common
+            // failure path hai. Pehle yahan sirf flag set hota tha, koi appendMsg()
+            // nahi tha — isliye chat mein "na reply na error" wala bug yahin se
+            // aata tha. Ab seedha clear Hinglish error bubble dikhao.
+            appendMsg('ai', 'Sorry yaar, abhi servers thoda busy/slow lag rahe hain. Ek baar phir try karo, main turant jawab dunga 🙂');
           }
         } catch(e2) {
           console.error('[Saathi] doChat retry error:', e2?.message || e2, e2);
@@ -7720,6 +7944,8 @@
       removeTyping(typId);
       window._lastApiError = true;
       window._lastErrorType = 'network';
+      // BUG FIX: yahan bhi pehle koi appendMsg() nahi tha.
+      appendMsg('ai', 'Kuch issue aa gaya yaar — thoda wait karke dobara try karo 🙂');
       busy = false; updateSendBtn();
       const navLogoChat = document.getElementById('nav-logo');
       if (navLogoChat) navLogoChat.classList.remove('floating');
@@ -10365,14 +10591,18 @@
       }
 
       // Wikipedia context
-      var isLiveDataQuery = /networth|net worth|salary|income|followers|subscriber|subs|views|stock|price|rate|market cap|valuation|rich list|billionaire/i.test(q);
+      // BUG FIX: pehle yahan 'var isLiveDataQuery' dobara declare hoti thi — same function
+      // scope mein upar line ~10522 pe already var isLiveDataQuery declare ho chuki thi.
+      // 'var' hoisting ki wajah se second declaration silently first ko override kar deti
+      // thi (alag regex ke saath). Ab alag naam use karte hain taaki koi ambiguity na rahe.
+      var _isLiveDataForNote = /networth|net worth|salary|income|followers|subscriber|subs|views|stock|price|rate|market cap|valuation|rich list|billionaire/i.test(q);
       if (wikiData) {
-        var wikiNote = isLiveDataQuery ? ' ⚠️ [WIKIPEDIA DATA — MAY BE OUTDATED for live figures like networth/price/followers. Prioritize Google Search grounding below.]' : '';
+        var wikiNote = _isLiveDataForNote ? ' ⚠️ [WIKIPEDIA DATA — MAY BE OUTDATED for live figures like networth/price/followers. Prioritize Google Search grounding below.]' : '';
         searchContext += '📖 Wikipedia — ' + wikiData.title + ':' + wikiNote + '\n' + wikiData.extract + '\n\n';
         addSource(wikiData.url, 'Wikipedia', wikiData.extract.substring(0,100));
       }
       if (wikiHiData && !wikiData) {
-        var wikiHiNote = isLiveDataQuery ? ' ⚠️ [WIKIPEDIA DATA — MAY BE OUTDATED for live figures. Prioritize Google Search grounding.]' : '';
+        var wikiHiNote = _isLiveDataForNote ? ' ⚠️ [WIKIPEDIA DATA — MAY BE OUTDATED for live figures. Prioritize Google Search grounding.]' : '';
         searchContext += '📖 Wikipedia (Hindi) — ' + wikiHiData.title + ':' + wikiHiNote + '\n' + wikiHiData.extract + '\n\n';
         addSource(wikiHiData.url, 'Wikipedia Hindi', wikiHiData.extract.substring(0,100));
       }
@@ -11098,17 +11328,74 @@
 
   var _IMG_GRID_ENABLED = true;
 
-  // AI-powered image relevance — hardcoded regex nahi, AI khud decide karta hai
-  // Gemini Flash Lite / Groq se fast yes/no call — async, non-blocking
+  // ══════════════════════════════════════════════════════════════════
+  // SMART IMAGE INTENT CLASSIFIER
+  // 3-layer system — fast, zero API calls for most cases:
+  //   Layer 1: HARD NO  — greetings, code, math, opinions (instant)
+  //   Layer 2: HARD YES — high-confidence visual intent (instant)
+  //   Layer 3: AI CALL  — only for genuinely ambiguous cases
+  // ══════════════════════════════════════════════════════════════════
+
+  function _localImageIntent(query, aiReply) {
+    var q = (query || '').trim().toLowerCase();
+    var r = (aiReply || '').toLowerCase();
+
+    // ── HARD NO: Code output detected ──
+    if (/```|<code|function\s*\(|def \w+\(|class \w+|\bimport \b|\bconst \b|\bvar \b|\blet \b/i.test(aiReply || '')) return 'NO';
+
+    // ── HARD NO: Very short / greetings / pure reactions ──
+    if (q.length <= 8) return 'NO';
+    if (/^(hi|hello|hey|ok|okay|thik|theek|theek hai|thik hai|haha|hehe|lol|bye|goodbye|alvida|thanks|thank you|shukriya|acha|accha|achha|hmm|haan|nahi|nah|na|ha|yep|yup|nope|wassup|sup|kya haal|kya hal|kaise ho|kaisa ho|kais ho|kais eho|kaisi ho|kaise hain|kya scene|kya chal raha|kya kar rahe|kya hua|good morning|good night|good evening|shubh prabhat|namaste|namaskar|salaam|salam|ji|hnji|oof|wow|wah|waah|arrey|arre|oye|bhai|yaar)(\s+(hai|ho|hain|yaar|bhai|ji|na|nahi|re|bol|bata|scene|chal|thik|theek|acha|accha))*\s*[!?.,']*$/i.test(q)) return 'NO';
+
+    // ── HARD NO: Purely abstract / non-visual topics ──
+    if (/\b(paisa|paise|paisay|rupee|rupaye|loan|emi|tax|gst|budget|kharcha|kharche|invest|share market|mutual fund|crypto|bitcoin|rate|interest|percent|%)\b/i.test(q)) return 'NO';
+    if (/\b(advice|salah|suggest|batao kya karu|kya karna chahiye|sahi hai|galat hai|teri rai|teri soch|opinion|lagta hai|feel|emotion|dukh|khushi|takleef|dard|pyar|mohabbat|ishq|rishta|breakup|divorce|shaadi|shadi)\b/i.test(q)) return 'NO';
+    if (/\b(calculate|count|kitna|percent|formula|equation|solve|answer|math|algebra|trigon|physics formula|chemistry formula)\b/i.test(q) && !/\b(plant|flower|tree|animal|insect|mineral)\b/i.test(q)) return 'NO';
+    if (/\b(write|likhna|likhdo|draft|email|letter|story|poem|kavita|shayari|essay|paragraph|translate|iska matlab|matlab kya|definition|define|explain)\b/i.test(q) && !/\b(plant|animal|bird|insect|place|landmark|building)\b/i.test(q)) return 'NO';
+    if (/\b(code|program|script|function|bug|error|debug|api|library|framework|html|css|javascript|python|java|react|node)\b/i.test(q)) return 'NO';
+    if (/\b(kya sochte|kya lagta|tumhara|tera|mera|meri|apna|life mein|zindagi|future|career|job|naukri|padhai|study tips|motivation|motivate|inspire|help me|help karo|samjhao|self|personality|tips|tricks|advice)\b/i.test(q) && !/\b(plant|animal|bird|insect|place|landmark|disease|symptom)\b/i.test(q)) return 'NO';
+
+    // ── HARD YES: Explicit visual request ──
+    if (/\b(dikhao|dikha|photo|tasveer|image|pic\b|picture|kaisa dikhta|kaisi dikhti|kaisa lagta|kaisi lagti|kya hota hai|kaisa hota hai|look like|looks like|show me)\b/i.test(q)) return 'YES';
+
+    // ── HARD YES: Plants & nature ──
+    if (/\b(neem|tulsi|aloe vera|ashwagandha|giloy|amla|brahmi|shatavari|peepal|banyan|mango tree|banana tree|papaya|coconut tree|bamboo|cactus|bonsai|rose|lotus|marigold|sunflower|jasmine|chameli|lavender|basil|mint|pudina|haldi|turmeric|ginger|adrak|garlic|lahsun|onion|pyaaz|kela|aam|ped|paudha|patta|jadi buti|herb|shrub|fern|moss|fungus|mushroom|flower|phool|fruit|sabzi|vegetable)\b/i.test(q)) return 'YES';
+
+    // ── HARD YES: Animals & birds ──
+    if (/\b(sher|lion|tiger|elephant|hathi|bagh|cheetah|leopard|giraffe|zebra|rhino|hippo|gorilla|monkey|bandar|dog|cat|billi|kutta|horse|ghoda|cow|gaay|buffalo|bhains|pig|goat|bakri|rabbit|khargosh|deer|hiran|fox|lomdi|wolf|bear|bhalu|snake|saanp|lizard|chipkali|crocodile|makoda|scorpion|spider|makkhi|machhar|butterfly|titli|eagle|cheel|parrot|tota|peacock|mor|crow|kauwa|sparrow|chidiya|owl|ullu|pigeon|kabootar|fish|machhli|shark|whale|dolphin|octopus|crab|kekda|frog|mendhak|cat fish|bird|janwar|pakshi)\b/i.test(q)) return 'YES';
+
+    // ── HARD YES: Food & dishes ──
+    if (/\b(biryani|butter chicken|dal makhani|paneer|rajma|chole|samosa|jalebi|gulab jamun|kheer|halwa|paratha|roti|naan|dosa|idli|upma|poha|pav bhaji|vada pav|pizza|burger|pasta|sushi|ramen|taco|curry|kebab|tikka|korma|nihari|haleem|paye|saag|palak|kadhi|raita|lassi|chai|masala chai|coffee|juice|smoothie|khana|dish|recipe|food)\b/i.test(q)) return 'YES';
+
+    // ── HARD YES: Famous places & landmarks ──
+    if (/\b(taj mahal|red fort|lal qila|qutub minar|india gate|gateway of india|eiffel tower|colosseum|great wall|pyramids|statue of liberty|big ben|burj khalifa|sydney opera|machu picchu|angkor wat|louvre|buckingham|white house|kremlin|hagia sophia|parthenon|stonehenge|niagara|grand canyon|amazon|sahara|himalaya|everest|k2|nile|ganges|amazon river|pacific|atlantic|mandir|masjid|church|gurudwara|monument|palace|mahal|fort|qila|temple|mosque|waterfall|glacier|volcano|island|beach|jungle|forest|desert|mountain|pahaad|samundar|darya|nadi)\b/i.test(q)) return 'YES';
+
+    // ── HARD YES: Human anatomy & diseases ──
+    if (/\b(skin|chehra|rash|daane|pimple|acne|wound|zakhm|fracture|dislocation|tumor|cancer|gangrene|jaundice|measles|chicken pox|smallpox|dengue rash|ringworm|fungal infection|eczema|psoriasis|vitiligo|burn|blister|swelling|symptoms|bimari|rog|lakshan|infection|bacteria|virus|parasite|anatomy|organ|heart|brain|kidney|liver|lungs|stomach|bone|muscle|vein|artery|blood cell|x-ray|mri|scan)\b/i.test(q)) return 'YES';
+
+    // ── HARD YES: Celebrities, politicians, historical figures ──
+    if (/\b(modi|gandhi|nehru|indira|ambedkar|subhash|bhagat singh|shivaji|akbar|shahjahan|aurangzeb|mughals|sachin|kohli|dhoni|shah rukh|salman|deepika|priyanka|amitabh|einstein|newton|tesla|darwin|napoleon|hitler|lincoln|obama|trump|putin|musk|gates|zuckerberg|bezos|bollywood|hollywood|actor|actress|politician|neta|pm|president|rashtrapati|cm|minister)\b/i.test(q)) return 'YES';
+
+    // ── HARD YES: Vehicles & products ──
+    if (/\b(maruti|suzuki|hyundai|tata|mahindra|honda|toyota|bmw|mercedes|audi|ferrari|lamborghini|porsche|tesla|ford|chevrolet|bike|motorcycle|scooter|activa|bullet|pulsar|bajaj|tvs|ktm|royal enfield|car|gadi|vehicle|truck|bus|train|metro|airplane|jet|helicopter|drone|ship|yacht|submarine|iphone|samsung|oneplus|pixel|realme|vivo|oppo|xiaomi|redmi|laptop|macbook|dell|hp|lenovo|tablet|smartwatch|headphones|camera|dslr|lens)\b/i.test(q)) return 'YES';
+
+    // ── AMBIGUOUS: Let AI decide ──
+    return 'MAYBE';
+  }
+
+  // Main entry — 3-layer check
   async function _aiShouldShowImages(query, aiReply) {
     if (!_IMG_GRID_ENABLED || !query || query.length < 3) return false;
-    // Code output — kabhi image nahi
-    if (/```|<code|function\s*\(|def \w+\(|class \w+|\bimport \b|\bconst \b|\bvar \b|\blet \b/i.test(aiReply || '')) return false;
-    // Obvious non-visual greetings — skip AI call
-    if (/^(hi|hello|ok|thik|haha|lol|bye|thanks|shukriya|acha|accha|hmm|haan|nahi|na|ha|kya haal|kaise ho|wassup)\s*[!?.]*$/i.test(query.trim())) return false;
+
+    var localDecision = _localImageIntent(query, aiReply);
+    if (localDecision === 'YES') return true;
+    if (localDecision === 'NO') return false;
+    // localDecision === 'MAYBE' → fall through to AI call
+
+    if (!GEMINI_KEY && !GROQ_KEY) return false;
     if (!GEMINI_KEY && !GROQ_KEY) return false;
     try {
-      var decidePrompt = 'User ne yeh message bheja: "' + query.substring(0, 200) + '"\nAI reply: "' + (aiReply || '').substring(0, 300) + '"\n\nKya is topic ke saath ek image/photo dikhana helpful hoga? Jaise: koi cheez kaisi dikhti hai, koi jagah, janwar, insaan, cheez, khana, ped, bimari wagera — jahan photo se samajhna aasaan ho.\nSirf ek word likho: YES ya NO';
+      var decidePrompt = 'User message: "' + query.substring(0, 200) + '"\nAI reply: "' + (aiReply || '').substring(0, 300) + '"\n\nTask: Decide if showing a real photo/image would genuinely help the user understand this topic better.\n\nAnswer YES only if the query is about a SPECIFIC VISUAL THING: a plant, animal, food dish, place/landmark, person (celebrity/politician), disease symptom, product, object, vehicle, building, etc. where seeing a photo adds real value.\n\nAnswer NO for ALL of these:\n- Greetings, chitchat, small talk (hi, hello, kaise ho, kya haal, wassup, good morning, etc.)\n- Feelings, emotions, opinions, personal advice\n- Math, calculations, definitions, abstract concepts\n- How-to instructions, coding, writing tasks\n- General questions with no visual component\n- When query is too vague or ambiguous\n\nBe VERY STRICT. When in doubt, say NO. Only YES if a photo is genuinely useful.\nReply with exactly one word: YES or NO';
       if (GEMINI_KEY) {
         var ctrl = new AbortController();
         var timer = setTimeout(function(){ ctrl.abort(); }, 4000);
@@ -11116,7 +11403,7 @@
           var res = await fetch(
             'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=' + GEMINI_KEY,
             { method: 'POST', headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: decidePrompt }] }], generationConfig: { maxOutputTokens: 5, temperature: 0 } }),
+              body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: decidePrompt }] }], generationConfig: { maxOutputTokens: 10, temperature: 0 } }),
               signal: ctrl.signal }
           );
           if (res.ok) {
@@ -11178,93 +11465,107 @@
          .replace(/\bmasjid\b/gi, 'mosque')
          .replace(/\bneta\b/gi, 'politician')
          .trim().replace(/\s+/g, ' ').substring(0, 80);
-    return q || userQuery.substring(0, 80);
+    // BUG FIX: fallback path pe .trim() missing tha — agar saari cleanup ke
+    // baad 'q' empty ho jaata, to raw userQuery seedha untrimmed return ho
+    // jaata, jisse leading/trailing spaces ki wajah se image search bekaar
+    // results deta tha.
+    return q || (userQuery || '').trim().substring(0, 80);
   }
 
-  // Fetch images from Wikipedia + Wikimedia Commons (both CORS-friendly, no API key)
+  // Fetch real, topic-relevant images using multiple free CORS-friendly sources
   async function _fetchAiOverviewImages(userQuery, headline) {
     var imgQ = _buildImgSearchQuery(userQuery, headline);
     if (!imgQ) return [];
     var images = [];
 
-    // Helper: AbortController with timeout (compatible with older Android WebView)
+    // Helper: AbortController with timeout
     function mkSig(ms) {
       var ctrl = new AbortController();
       setTimeout(function(){ try { ctrl.abort(); } catch(e) {} }, ms);
       return ctrl.signal;
     }
 
-    // ── Source 1: Wikipedia pageimages — best for famous topics ──
+    // ── Source 1: Wikimedia Commons — filtered for real photos only ──
+    // (SVG, icons, flags, logos, maps, silhouettes filtered out)
     try {
-      var w1Url = 'https://en.wikipedia.org/w/api.php?action=query&titles='
-        + encodeURIComponent(imgQ)
-        + '&prop=pageimages&pithumbsize=640&pilimit=3&format=json&origin=*';
-      var w1Res = await fetch(w1Url, { signal: mkSig(5000) });
-      if (w1Res.ok) {
-        var w1Data = await w1Res.json();
-        var w1Pages = (w1Data && w1Data.query && w1Data.query.pages) || {};
-        Object.values(w1Pages).forEach(function(page) {
-          if (page.thumbnail && page.thumbnail.source) {
-            images.push({ url: page.thumbnail.source, alt: page.title || imgQ });
+      var cmUrl = 'https://commons.wikimedia.org/w/api.php?action=query&generator=search'
+        + '&gsrsearch=' + encodeURIComponent(imgQ)
+        + '&gsrnamespace=6&prop=imageinfo&iiprop=url|thumburl|mime&iiurlwidth=480'
+        + '&gsrlimit=12&format=json&origin=*';
+      var cmRes = await fetch(cmUrl, { signal: mkSig(6000) });
+      if (cmRes.ok) {
+        var cmData = await cmRes.json();
+        var cmPages = (cmData && cmData.query && cmData.query.pages) || {};
+        Object.values(cmPages).forEach(function(page) {
+          var ii = page.imageinfo && page.imageinfo[0];
+          if (!ii || !ii.thumburl) return;
+          var t = (page.title || '').toLowerCase();
+          var mime = (ii.mime || '').toLowerCase();
+          // Skip SVGs, icons, logos, flags, maps, diagrams, line drawings
+          if (/\.svg$/i.test(t) || mime === 'image/svg+xml') return;
+          if (/icon|flag|logo|symbol|seal|coat_of|blank|location_map|silhouette|diagram|chart|graph|signature|stamp|badge|emblem|crest|patch|template|noimage|placeholder/i.test(t)) return;
+          // Skip very small thumbnails (likely icons)
+          var isDup = images.some(function(im){ return im.url === ii.thumburl; });
+          if (!isDup) {
+            var cleanAlt = (page.title || '').replace(/^File:/i,'').replace(/\.(jpg|jpeg|png|gif|webp|tiff?)$/i,'').replace(/_/g,' ');
+            images.push({ url: ii.thumburl, alt: cleanAlt });
           }
         });
       }
     } catch(e) {}
 
-    // ── Source 2: Wikipedia search → batch thumbnail fetch ──
+    // ── Source 2: Wikipedia pageimages — best thumbnail for exact topic ──
     if (images.length < 3) {
+      try {
+        var w1Url = 'https://en.wikipedia.org/w/api.php?action=query&titles='
+          + encodeURIComponent(imgQ)
+          + '&prop=pageimages&pithumbsize=640&pilimit=3&format=json&origin=*';
+        var w1Res = await fetch(w1Url, { signal: mkSig(5000) });
+        if (w1Res.ok) {
+          var w1Data = await w1Res.json();
+          var w1Pages = (w1Data && w1Data.query && w1Data.query.pages) || {};
+          Object.values(w1Pages).forEach(function(page) {
+            if (page.thumbnail && page.thumbnail.source) {
+              var src = page.thumbnail.source;
+              // Skip SVGs and obvious icons from Wikipedia too
+              if (/\.svg$/i.test(src) || /icon|flag|logo|map|symbol/i.test(src)) return;
+              var isDup = images.some(function(im){ return im.url === src; });
+              if (!isDup) images.push({ url: src, alt: page.title || imgQ });
+            }
+          });
+        }
+      } catch(e) {}
+    }
+
+    // ── Source 3: Wikipedia search → batch thumbnails (fallback for less-known topics) ──
+    if (images.length < 2) {
       try {
         var sUrl = 'https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch='
           + encodeURIComponent(imgQ)
-          + '&srlimit=8&srinfo=&srprop=title&format=json&origin=*';
+          + '&srlimit=6&srinfo=&srprop=title&format=json&origin=*';
         var sRes = await fetch(sUrl, { signal: mkSig(5000) });
         if (sRes.ok) {
           var sData = await sRes.json();
           var sResults = (sData && sData.query && sData.query.search) || [];
-          var titles = sResults.map(function(r){ return r.title; }).slice(0, 8).join('|');
+          var titles = sResults.map(function(r){ return r.title; }).slice(0, 6).join('|');
           if (titles) {
             var t2Url = 'https://en.wikipedia.org/w/api.php?action=query&titles='
               + encodeURIComponent(titles)
-              + '&prop=pageimages&pithumbsize=640&pilimit=8&format=json&origin=*';
+              + '&prop=pageimages&pithumbsize=640&pilimit=6&format=json&origin=*';
             var t2Res = await fetch(t2Url, { signal: mkSig(5000) });
             if (t2Res.ok) {
               var t2Data = await t2Res.json();
               var t2Pages = (t2Data && t2Data.query && t2Data.query.pages) || {};
               Object.values(t2Pages).forEach(function(page) {
                 if (page.thumbnail && page.thumbnail.source) {
-                  var isDup = images.some(function(im){ return im.url === page.thumbnail.source; });
-                  if (!isDup) images.push({ url: page.thumbnail.source, alt: page.title || imgQ });
+                  var src = page.thumbnail.source;
+                  if (/\.svg$/i.test(src) || /icon|flag|logo|map|symbol/i.test(src)) return;
+                  var isDup = images.some(function(im){ return im.url === src; });
+                  if (!isDup) images.push({ url: src, alt: page.title || imgQ });
                 }
               });
             }
           }
-        }
-      } catch(e) {}
-    }
-
-    // ── Source 3: Wikimedia Commons image search ──
-    if (images.length < 3) {
-      try {
-        var cmUrl = 'https://commons.wikimedia.org/w/api.php?action=query&generator=search'
-          + '&gsrsearch=' + encodeURIComponent(imgQ)
-          + '&gsrnamespace=6&prop=imageinfo&iiprop=url|thumburl&iiurlwidth=420'
-          + '&gsrlimit=8&format=json&origin=*';
-        var cmRes = await fetch(cmUrl, { signal: mkSig(6000) });
-        if (cmRes.ok) {
-          var cmData = await cmRes.json();
-          var cmPages = (cmData && cmData.query && cmData.query.pages) || {};
-          Object.values(cmPages).forEach(function(page) {
-            var ii = page.imageinfo && page.imageinfo[0];
-            if (!ii || !ii.thumburl) return;
-            // Skip icons, flags, SVGs, maps, logos
-            var t = (page.title || '').toLowerCase();
-            if (/icon|flag|logo|symbol|seal|coat_of|blank|location_map|silhouette|\.svg$/i.test(t)) return;
-            var isDup = images.some(function(im){ return im.url === ii.thumburl; });
-            if (!isDup) {
-              var cleanAlt = (page.title || '').replace(/^File:/i,'').replace(/\.\w{2,5}$/,'').replace(/_/g,' ');
-              images.push({ url: ii.thumburl, alt: cleanAlt });
-            }
-          });
         }
       } catch(e) {}
     }
@@ -11353,9 +11654,20 @@
   }
 
   function _openAiImgFullscreen(url, alt) {
-    // Clean up any existing overlay (including its history state + popHandler)
-    // before creating a new one — prevents double-open leak.
-    _closeAiImgFs(false);
+    // BUG FIX: pehle yahan _closeAiImgFs(false) call hota tha jo agar pichla
+    // overlay khula tha to history.back() bhi chala deta — wo ASYNC hai, aur
+    // tab tak hum naya popHandler attach kar dete the. Jab purani back()
+    // navigation thodi der baad fire hoti, wo naye popHandler ko trigger kar
+    // ke turant naya-khula overlay band kar deti (double-close bug). Fix:
+    // pichle overlay ka sirf DOM + popHandler cleanup karo (no history.back()),
+    // aur agar history state already pushed hai to dobara push mat karo —
+    // wahi single pushed-state reuse karo.
+    var oldOverlay = document.getElementById('ai-img-fs-overlay');
+    if (oldOverlay) oldOverlay.remove();
+    if (_aiImgFsPopHandler) {
+      window.removeEventListener('popstate', _aiImgFsPopHandler);
+      _aiImgFsPopHandler = null;
+    }
 
     var overlay = document.createElement('div');
     overlay.id = 'ai-img-fs-overlay';
@@ -11368,8 +11680,10 @@
 
     // Android back button support
     try {
-      history.pushState({ aiImgFs: true }, '');
-      _aiImgFsStatePushed = true;
+      if (!_aiImgFsStatePushed) {
+        history.pushState({ aiImgFs: true }, '');
+        _aiImgFsStatePushed = true;
+      }
       _aiImgFsPopHandler = function() {
         // Browser already popped the state — just clean up UI
         _closeAiImgFs(true);
@@ -13788,7 +14102,14 @@
 
   function _stopAudioViz() {
     if (_waveRaf) { cancelAnimationFrame(_waveRaf); _waveRaf = null; }
-    if (_micStream) { _micStream.getTracks().forEach(t => t.stop()); _micStream = null; }
+    // BUG FIX: agar getUserMedia abhi resolve nahi hua tha, _micStream string
+    // 'pending' hota hai (na ki MediaStream object) — uspe .getTracks() call
+    // karne se "TypeError: _micStream.getTracks is not a function" crash hota
+    // tha. Real stream cleanup us case mein getUserMedia ke .then() handler ke
+    // andar _voiceActive check se already ho jaata hai (upar dekho), isliye
+    // yahan sirf null kar dena kaafi hai.
+    if (_micStream && _micStream !== 'pending') { _micStream.getTracks().forEach(t => t.stop()); }
+    _micStream = null;
     if (_audioCtx)  { try { _audioCtx.close(); } catch(e){} _audioCtx = null; }
     _analyser = null;
     // Reset bars to idle
@@ -14208,7 +14529,9 @@
           // Android: onend pe best transcript fire karo
           var q = (_vmFinalTranscript || _vmInterimSnapshot).trim();
           _vmFinalTranscript = ''; _vmInterimSnapshot = '';
+          var heardSomething = false;
           if (q && q.length > 1) {
+            heardSomething = true;
             var words = q.split(/\s+/);
             var unique = new Set(words.map(function(w){ return w.toLowerCase(); }));
             var isGarbage = words.length > 4 && unique.size <= 2;
@@ -14220,7 +14543,23 @@
               return;
             }
           }
-          setTimeout(function(){ _vmListenLoop(); }, 250);
+          // BUG FIX (UX — "mic on hai par reply hi nahi aata" wala feel):
+          // pehle yahan reject hone par BILKUL SILENTLY dobara listening shuru
+          // ho jaata tha — user ko zero feedback milta tha ki unki awaaz suni
+          // gayi thi par samajh nahi aayi, isliye lagta tha app atak gaya hai.
+          // Ab agar kuch bola gaya tha (par reject hua) to ek chhota status
+          // flash karo taaki pata chale app zinda hai, sun raha hai.
+          if (heardSomething) {
+            _setVMStatus('Sun nahi paya, phir bolo…');
+            setTimeout(function() {
+              if (_vmActive && !_vmMuted && !_vmBusy) {
+                _setVMStatus('Listening…');
+                _vmListenLoop();
+              }
+            }, 700);
+          } else {
+            setTimeout(function(){ _vmListenLoop(); }, 250);
+          }
         } else {
           if (_vmSilenceTimer) return;
           setTimeout(function(){ _vmListenLoop(true); }, 150);
@@ -14510,8 +14849,19 @@
       for (var i = 0; i < words.length; i += 150) chunks.push(words.slice(i, i + 150).join(' '));
       var chunkIdx = 0;
       var _vmSpokenPrefix = ''; // ab tak ke poore-bol-chuke chunks ka text
+      // BUG FIX (asli wajah robotic/garbled "guduk guduk" awaaz): pehle yeh
+      // interval sirf tab resume() karta tha jab speechSynthesis.paused
+      // PEHLE SE true ho — lekin Android Chrome ka 15s-freeze bug mein engine
+      // khud `paused` flag set nahi karta, woh bina kisi flag ke seedha
+      // internally atak/garbled ho jaata hai. Isliye yeh check kabhi true hi
+      // nahi hota tha aur kick kabhi lagta hi nahi tha. Standard fix: har
+      // interval pe UNCONDITIONALLY pause()+resume() karo jab tak speaking
+      // hai — yeh engine ko force-kick karta hai chahe paused flag kuch bhi ho.
       var _vmKaTimer = setInterval(function() {
-        if (window.speechSynthesis.speaking && window.speechSynthesis.paused) window.speechSynthesis.resume();
+        if (window.speechSynthesis.speaking) {
+          window.speechSynthesis.pause();
+          window.speechSynthesis.resume();
+        }
       }, 10000);
 
       function done() {
@@ -15831,56 +16181,63 @@
     _discLoading = true;
     var _safetyTimer = setTimeout(function() { _discLoading = false; }, 20000);
     var el = document.getElementById('disc-content');
-
-    // Show skeleton immediately
-    if (el) {
-      var skHtml = '';
-      for (var sk = 0; sk < 6; sk++) {
-        skHtml += '<div class="disc-skeleton-card"><div class="disc-sk-text"><div class="disc-sk-line s"></div><div class="disc-sk-line m"></div><div class="disc-sk-line l"></div></div><div class="disc-sk-img"></div></div>';
-      }
-      el.innerHTML = skHtml;
-    }
-
-    var cat = DISC_CATEGORIES[tabIdx];
-    var effectiveQuery = cat.forYou ? _discForYouQuery() : cat.query;
-    var effectiveFeed  = cat.forYou ? '' : cat.feed;
-    var searchFeed = 'https://news.google.com/rss/search?q=' + encodeURIComponent(effectiveQuery) + '&hl=en-IN&gl=IN&ceid=IN:en';
     var articles = null;
 
-    // ── Har strategy ek Promise return kare — sab parallel chalao ──
-    var strategies = [];
+    // BUG FIX: pehle clearTimeout(_safetyTimer) sirf await ke try/catch ke
+    // BAAD tha. Agar beech mein (skeleton render, DISC_CATEGORIES[tabIdx]
+    // lookup, ya strategies banate waqt) koi sync error throw hota, to
+    // clearTimeout kabhi chalta hi nahi tha aur _discLoading poore 20s tak
+    // stuck reh jaata — ek "stale timeout" jahan fast load/fail bhi 20s tak
+    // loading-guard ko block kar deta. Ab pura body try/finally mein hai
+    // taaki cleanup HAMESHA turant ho, error aaye ya na aaye.
+    try {
+      // Show skeleton immediately
+      if (el) {
+        var skHtml = '';
+        for (var sk = 0; sk < 6; sk++) {
+          skHtml += '<div class="disc-skeleton-card"><div class="disc-sk-text"><div class="disc-sk-line s"></div><div class="disc-sk-line m"></div><div class="disc-sk-line l"></div></div><div class="disc-sk-img"></div></div>';
+        }
+        el.innerHTML = skHtml;
+      }
 
-    // S1: rss2json fixed feed
-    if (effectiveFeed) {
-      strategies.push(_rss2json(effectiveFeed, 12000));
-    }
+      var cat = DISC_CATEGORIES[tabIdx];
+      var effectiveQuery = cat.forYou ? _discForYouQuery() : cat.query;
+      var effectiveFeed  = cat.forYou ? '' : cat.feed;
+      var searchFeed = 'https://news.google.com/rss/search?q=' + encodeURIComponent(effectiveQuery) + '&hl=en-IN&gl=IN&ceid=IN:en';
 
-    // S2: rss2json search feed
-    strategies.push(_rss2json(searchFeed, 12000));
+      // ── Har strategy ek Promise return kare — sab parallel chalao ──
+      var strategies = [];
 
-    // S3: CORS proxy fixed feed
-    if (effectiveFeed) {
+      // S1: rss2json fixed feed
+      if (effectiveFeed) {
+        strategies.push(_rss2json(effectiveFeed, 12000));
+      }
+
+      // S2: rss2json search feed
+      strategies.push(_rss2json(searchFeed, 12000));
+
+      // S3: CORS proxy fixed feed
+      if (effectiveFeed) {
+        strategies.push(
+          _proxyFetch(effectiveFeed, false).then(function(xml) {
+            if (!xml || xml.length < 100) throw new Error('empty');
+            var items = _parseRSS(xml);
+            if (!items.length) throw new Error('no items');
+            return items;
+          })
+        );
+      }
+
+      // S4: CORS proxy search feed
       strategies.push(
-        _proxyFetch(effectiveFeed, false).then(function(xml) {
+        _proxyFetch(searchFeed, false).then(function(xml) {
           if (!xml || xml.length < 100) throw new Error('empty');
           var items = _parseRSS(xml);
           if (!items.length) throw new Error('no items');
           return items;
         })
       );
-    }
 
-    // S4: CORS proxy search feed
-    strategies.push(
-      _proxyFetch(searchFeed, false).then(function(xml) {
-        if (!xml || xml.length < 100) throw new Error('empty');
-        var items = _parseRSS(xml);
-        if (!items.length) throw new Error('no items');
-        return items;
-      })
-    );
-
-    try {
       var any = (typeof Promise.any === 'function') ? Promise.any : _promiseAny;
       // BUGFIX: silence each strategy synchronously before racing — same fix
       // as _rss2json/_proxyFetch, stops "Unhandled promise rejection: bad
@@ -15889,10 +16246,10 @@
       articles = await any(strategies);
     } catch(e) {
       articles = null;
+    } finally {
+      clearTimeout(_safetyTimer);
+      _discLoading = false;
     }
-
-    clearTimeout(_safetyTimer);
-    _discLoading = false;
 
     if (articles && articles.length > 0) {
       articles = _discDedupArticles(articles);
@@ -16775,8 +17132,13 @@
 
   // ── GALLERY from Lens ──
   window.openGalleryFromLens = function() {
+    // BUG FIX: pichla leftover input (agar last baar cancel hua tha) pehle
+    // hata do — wahi pattern jo triggerFile()/openCamera() mein use hota hai.
+    var old = document.getElementById('sl-gallery-input');
+    if (old) old.remove();
     var inp = document.createElement('input');
     inp.type = 'file';
+    inp.id = 'sl-gallery-input';
     inp.accept = 'image/*';
     inp.style.display = 'none';
     inp.onchange = function() {
@@ -16787,9 +17149,17 @@
       _loadImageIntoOverlay(inp.files[0]);
       inp.remove();
     };
+    // BUG FIX: pehle ek blind setTimeout(3000) input ko force-remove kar
+    // deta tha. Agar user gallery mein 3s se zyada time leta (scroll/search
+    // kar ke photo dhoondte hue — bahut common hai), to input DOM se hi hat
+    // jaata, aur uske baad photo select karne par onchange fire hona
+    // unreliable ho jaata tha (silent failure — "select" button kaam nahi
+    // karta lagta). Fix: same 'cancel' event pattern jo _fallbackInputCamera
+    // mein use hota hai — ye sirf tab fire hota hai jab user picker band
+    // kare bina kuch chuna, file picker chahe jitni der khula rahe.
+    inp.oncancel = function() { inp.remove(); };
     document.body.appendChild(inp);
     inp.click();
-    setTimeout(function(){ inp.remove(); }, 3000);
   };
 
   // Load last photo thumbnail into gallery button
@@ -17440,8 +17810,11 @@
     var box = document.getElementById('sl-live-cc-box');
     var span = document.getElementById('sl-live-cc-text');
     if (span) span.textContent = text;
-    // Live mode mein captions hamesha dikhao — CC toggle sirf styling ke liye hai
-    if (box) box.style.display = text ? 'block' : 'none';
+    // BUG FIX: pehle yahan box hamesha force-show ho jaata tha jab bhi naya
+    // text aata ("Live mode mein captions hamesha dikhao" — par ye CC toggle
+    // (_liveCCOn) ko ignore karta tha). Matlab user CC off karta, aur agle hi
+    // caption text par box wapas dikh jaata. Ab toggle ko respect karo.
+    if (box) box.style.display = (text && _liveCCOn) ? 'block' : 'none';
   }
 
   function _startLiveAssistant() {
@@ -17620,7 +17993,9 @@
     var box = document.getElementById('sl-live-cc-box');
     var span = document.getElementById('sl-live-cc-text');
     if (span) { span.textContent = question; span.style.opacity = '0.65'; span.style.fontStyle = 'italic'; }
-    if (box) box.style.display = 'block';
+    // BUG FIX: yahan bhi same CC-toggle-override bug tha — box hamesha force
+    // 'block' ho jaata tha, _liveCCOn ko ignore karte hue. Ab toggle respect karo.
+    if (box) box.style.display = _liveCCOn ? 'block' : 'none';
 
     try {
       var frame = _liveVideoOff ? null : _liveCaptureFrame();
@@ -17828,6 +18203,20 @@
     }
     navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
       .then(function(s) {
+        // BUG FIX: getUserMedia resolve hone mein time leta hai (permission
+        // prompt). Agar us beech user 'live' tab se bahar nikal gaya
+        // (_stopLiveCamera already chal chuka, panel hidden ho gaya), to
+        // 'vid' DOM se hat sakta hai ya panel band ho sakta hai — purani
+        // _startAudioViz mic-leak race jaisa hi case hai. Check kar ke agar
+        // ab live nahi hai to naya stream turant band karo, warna camera
+        // indefinitely chalu reh jaata (battery drain + cam-in-use indicator).
+        var stillLive = !!vid && document.getElementById('sl-live-video') === vid &&
+          document.getElementById('sl-live-panel') &&
+          document.getElementById('sl-live-panel').style.display !== 'none';
+        if (!stillLive) {
+          s.getTracks().forEach(function(t) { t.stop(); });
+          return;
+        }
         _liveStream = s;
         vid.srcObject = s;
         _liveVideoOff = false;
